@@ -18,7 +18,7 @@ let checkLevel = (token, level) => {
             else return decoded;
         })
         const user_level = decoded.user_level
-        
+        console.log(user_level)
         if(level > user_level)
             return false
         else
@@ -62,17 +62,7 @@ const logRequestResponse = (req, res) => {
     // console.log(request)
     // console.log(response)
 
-    db.query(
-        "INSERT INTO log_information_tb (request, response, request_ip) VALUES (?, ?, ?)",
-        [request, response, requestIp],
-        (err, result, fields) => {
-            if(err)
-                console.log(err)
-            else {
-                //console.log(result)
-            }
-        }
-    )
+    
 
 }
 const logRequest = (req) => {
@@ -85,17 +75,7 @@ const logRequest = (req) => {
         body: req.body
     }
     request = JSON.stringify(request)
-    db.query(
-        "INSERT INTO log_information_tb (request, request_ip) VALUES (?, ?)",
-        [request, requestIp],
-        (err, result, fields) => {
-            if(err)
-                console.log(err)
-            else {
-                console.log(result)
-            }
-        }
-    )
+    
 }
 const logResponse = (req, res) => {
     const requestIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip
@@ -130,22 +110,13 @@ const isNotNullOrUndefined = (paramList) => {
     return true
 }
 
-// api가 ad인지 product인지 확인 후 파일 네이밍
+//이미지 저장소 설정
 const namingImagesPath = (api, files) => {
-    if(api == "ad")
+    if(api == "movie")
     {
         return { 
-            image: (files) ? "/image/ad/" + files.filename : "/image/ad/defaultAd.png", 
+            image: (files) ? "/image/movie/" + files.filename : "/image/ad/defaultMovie.png", 
             isNull: !(files) 
-        }
-    }
-    else if(api == "product")
-    {
-        return {
-            mainImage: (files.mainImage) ? "/image/item/" + files.mainImage[0].filename : "/image/item/defaultItem.png",
-            detailImage: (files.detailImage) ? "/image/detailItem/" + files.detailImage[0].filename : "/image/detailItem/defaultDetail.png",
-            qrImage: (files.qrImage) ? "/image/qr/" + files.qrImage[0].filename : "/image/qr/defaultQR.png",
-            isNull: [!files.mainImage, !files.detailImage, !files.qrImage]
         }
     }
 }

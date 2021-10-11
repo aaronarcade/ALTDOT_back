@@ -1,12 +1,11 @@
 const mysql = require('mysql')
 
 const db = mysql.createConnection({
-    host : "emart.cafe24app.com",
-    user : 'inlightek5',
-    password : 'qjfwk100djr!',
+    host : "localhost",
+    user : 'root',
+    password : 'rlawndks4',
     port : 3306,
-    database:'inlightek5',
-    timezone: 'Asia/Seoul'
+    database:'altdot',
 })
 db.connect();
 
