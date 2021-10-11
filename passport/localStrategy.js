@@ -30,16 +30,16 @@ module.exports = (passport) => {
                         if(err)
                         {
                             console.log(err.message)
-                            done(null, false, { message: '계정 확인 과정에 오류가 발생했습니다.'})
+                            done(null, false, { message: 'An error occurred during the account verification process.'})
                         }
                         else if(hash === result[0].password)
                             done(null, result[0])
                         else
-                            done(null, false, { message: '비밀번호가 일치하지 않습니다.' })
+                            done(null, false, { message: 'Passwords do not match.' })
                     });
                 }
                 else {
-                    done(null, false, { message: '가입되지 않은 회원입니다.' });
+                    done(null, false, { message: 'You are not a registered member.' });
                 }
             });
         } catch (error) {

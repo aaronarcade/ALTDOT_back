@@ -52,7 +52,7 @@ router.post('/signup', (req, res, next) => {
 
     db.query(sql, [id], (err, result) => {
       if (result.length > 0)
-        response(req, res, -200, "ID가 중복됩니다.", [])
+        response(req, res, -200, "Usernames are duplicated", [])
       else {
         console.log(salt)
         crypto.pbkdf2(pw, salt, saltRounds, pwBytes, 'sha512', async (err, decoded) => {
@@ -61,7 +61,7 @@ router.post('/signup', (req, res, next) => {
 
           if (err) {
             console.log(err)
-            response(req, res, -200, "비밀번호 암호화 도중 에러 발생", [])
+            response(req, res, -200, "An error occurred during password encryption.", [])
           }
           else {
             sql = 'INSERT INTO user_table (user_name, password,name, email, organization) VALUES (?, ?, ?, ?, ?)'
@@ -69,10 +69,10 @@ router.post('/signup', (req, res, next) => {
 
               if (err) {
                 console.log(err)
-                response(req, res, -200, "회원 추가 실패", [])
+                response(req, res, -200, "Failed to add member", [])
               }
               else {
-                response(req, res, 100, "회원 추가 성공", [])
+                response(req, res, 100, "Success to add member", [])
               }
             })
           }
@@ -85,7 +85,7 @@ router.post('/signup', (req, res, next) => {
   }
   catch (err) {
     console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
+    response(req, res, -200, "Server Error.", [])
   }
 })
 
@@ -109,7 +109,7 @@ router.get('/auth', (req, res, next) => {
   }
   catch (err) {
     console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
+    response(req, res, -200, "Server error.", [])
   }
 })
 
@@ -118,7 +118,7 @@ router.post('/login', (req, res, next) => {
     passport.authenticate('local', { session: false }, async (err, user, info) => {
 
       if (!user)
-        return response(req, res, -200, "해당 계정이 존재하지 않습니다.", []);
+        return response(req, res, -200, "Account does not exist.", []);
 
       try {
         var expiresTime;
@@ -141,17 +141,17 @@ router.post('/login', (req, res, next) => {
 
         res.cookie("token", token, { httpOnly: true, maxAge: 60 * 60 * 1000 });
 
-        return response(req, res, 200, user.name + '님 환영합니다.', []);
+        return response(req, res, 200, 'Welcome to ALTDOT, '+user.name, []);
       }
       catch (err) {
         console.log(err);
-        return response(req, res, -200, "로그인 중 오류 발생", [])
+        return response(req, res, -200, "Error Logging in.", [])
       }
     })(req, res, next);
   }
   catch (err) {
     console.log(err);
-    response(req, res, -200, "로그인 중 오류 발생", [])
+    response(req, res, -200, "Error Logging in.", [])
   }
 })
 
@@ -159,11 +159,11 @@ router.post('/logout', (req, res, next) => {
   try {
     res.clearCookie('token')
     //res.clearCookie('rtoken')
-    response(req, res, 200, "로그아웃 성공", [])
+    response(req, res, 200, "Logout success", [])
   }
   catch (err) {
     console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
+    response(req, res, -200, "Server Error", [])
   }
 });
 
