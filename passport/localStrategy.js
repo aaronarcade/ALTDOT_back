@@ -19,9 +19,11 @@ module.exports = (passport) => {
     passport.use(new LocalStrategy({
         usernameField: 'id',
         passwordField: 'pw',
-    }, async (userid, password, done) => {
+        organizationField: 'organization'
+    }, async (username, password, done) => {
         try {
-            db.query('SELECT * FROM user_table WHERE user_name=?', [userid], (err, result) => {
+            
+            db.query('SELECT * FROM user_table WHERE user_name=?', [username], (err, result) => {
                 if (result.length>0) {
                     crypto.pbkdf2(password, salt, saltRounds, pwBytes, 'sha512', async (err, decoded)=> {
                         // bcrypt.hash(pw, salt, async (err, hash) => {
@@ -32,8 +34,11 @@ module.exports = (passport) => {
                             console.log(err.message)
                             done(null, false, { message: 'An error occurred during the account verification process.'})
                         }
-                        else if(hash === result[0].password)
-                            done(null, result[0])
+                        else if(hash === result[0].password){     
+                                done(null, result[0])
+                                console.log()
+                        }
+                            
                         else
                             done(null, false, { message: 'Passwords do not match.' })
                     });

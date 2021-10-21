@@ -65,7 +65,7 @@ router.post('/signup', (req, res, next) => {
           }
           else {
             sql = 'INSERT INTO user_table (user_name, password,name, email, organization) VALUES (?, ?, ?, ?, ?)'
-            await db.query(sql, [id,hash, name, email, organization], (err, result) => {
+            await db.query(sql, [id, hash, name, email, organization], (err, result) => {
 
               if (err) {
                 console.log(err)
@@ -96,8 +96,12 @@ router.get('/auth', (req, res, next) => {
 
     if (decode) {
       let pk = decode.code
+      let id = decode.id
+      let organization = decode.organization
       console.log(pk)
-      res.send({pk})
+      console.log(id)
+      console.log(organization)
+      res.send({ pk,id,organization })
     }
     else {
       res.send({
@@ -121,27 +125,42 @@ router.post('/login', (req, res, next) => {
         return response(req, res, -200, "Account does not exist.", []);
 
       try {
-        var expiresTime;
+        const id = req.body.id
+        const organization = req.body.organization
+        await db.query('SELECT * FROM user_table WHERE user_name=?', [id], (err, result) => {
+          if (err) {
+            console.log(err)
+          }
+          else {
+            if (organization != result[0].organization) {
+              return response(req, res, -200, "Error Organization.", [])
+            }
+            else {
+              var expiresTime;
 
-        expiresTime = '60m'
+              expiresTime = '60m'
 
-        const token = jwt.sign({
-          code: user.pk,
-          id: user.user_name,
-          name: user.name,
-          user_level: user.user_level
+              const token = jwt.sign({
+                code: user.pk,
+                id: user.user_name,
+                name: user.name,
+                user_level: user.user_level,
+                organization: user.organization
+              },
+                jwtSecret,
+                {
+                  expiresIn: '60m',
+                  issuer: 'fori',
+                });
 
-        },
-          jwtSecret,
-          {
-            expiresIn: '60m',
-            issuer: 'fori',
-          });
 
+              res.cookie("token", token, { httpOnly: true, maxAge: 60 * 60 * 1000 });
 
-        res.cookie("token", token, { httpOnly: true, maxAge: 60 * 60 * 1000 });
+              return response(req, res, 200, 'Welcome to ALTDOT, ' + user.name, []);
+            }
+          }
+        })
 
-        return response(req, res, 200, 'Welcome to ALTDOT, '+user.name, []);
       }
       catch (err) {
         console.log(err);
@@ -323,40 +342,40 @@ router.get('/myprofile:pk', (req, res) => {
   try {
     const pk = req.params.pk
     if (checkLevel(req.cookies.token, 0)) {
-      db.query('SELECT * FROM users WHERE pk=?',pk,(err, result)=>{
-        if(err){
+      db.query('SELECT * FROM users WHERE pk=?', pk, (err, result) => {
+        if (err) {
           console.log(err);
         }
-        else{
+        else {
           response(req, res, 200, "프로필 출력 성공", [result])
         }
       })
     }
     else
       lowLevelResponse(req, res);
-    }
-    catch (err) {
+  }
+  catch (err) {
     console.log(err)
     response(req, res, -200, "서버 에러 발생", [])
   }
 });
 //자신이 예매한 영화 출력
-router.get('/ordermovie:pk',(req, res)=>{
+router.get('/ordermovie:pk', (req, res) => {
   try {
     const pk = req.params.pk;
-    db.query('SELECT * FROM movies WHERE pk=?',pk,(err,result)=>{
-      if(err){
+    db.query('SELECT * FROM movies WHERE pk=?', pk, (err, result) => {
+      if (err) {
         console.log(err)
       }
-      else{
+      else {
         response(req, res, 200, "영화 가져오기 성공", result[0])
       }
     })
-    }
-    catch (err) {
-      console.log(err)
-      response(req, res, -200, "서버 에러 발생", [])
-    }
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "서버 에러 발생", [])
+  }
 })
 //영화 예매 취소
 router.post('/cancelmovie', async (req, res) => {
