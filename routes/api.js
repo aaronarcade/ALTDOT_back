@@ -36,7 +36,7 @@ router.get('/', (req, res) => {
 });
 
 
-//---------------------------------------------------------회원
+//---------------------------------------------------------
 //회원가입
 router.post('/signup', (req, res, next) => {
   // 값 받아올 때, id, pw, userLevel, brandList
@@ -101,7 +101,7 @@ router.get('/auth', (req, res, next) => {
       console.log(pk)
       console.log(id)
       console.log(organization)
-      res.send({ pk,id,organization })
+      res.send({ pk, id, organization })
     }
     else {
       res.send({
@@ -127,6 +127,7 @@ router.post('/login', (req, res, next) => {
       try {
         const id = req.body.id
         const organization = req.body.organization
+        console.log(organization)
         await db.query('SELECT * FROM user_table WHERE user_name=?', [id], (err, result) => {
           if (err) {
             console.log(err)
@@ -186,7 +187,163 @@ router.post('/logout', (req, res, next) => {
   }
 });
 
-//------------------------------------------------영화
+//------------------------------------------------bus
+//정류장 추가
+router.post('/addstation', (req, res, next) => {
+  try {
+    const organization = req.body.organization
+    const stopId = req.body.stopId
+    const tier = req.body.tier
+    const riderQuin = req.body.riderQuin
+    const stopName = req.body.stopName
+    const problems = req.body.problems
+    const suggestions = req.body.suggestions
+    console.log(req.body)
+    if (organization == 'MARTA') {
+      db.query('INSERT INTO marta_bus_table (stop_id, tier, ridership_quintile, stop_name) VALUE (?, ?, ?, ?)',
+      [stopId, tier, riderQuin, stopName],(err, result)=>{
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to add station", [])
+        }
+        else {
+          response(req, res, 100, "Success to add station", [])
+        }
+      })
+    }
+    else if (organization == 'ATLDOT') {
+      db.query('INSERT INTO atldot_bus_table (stop_id, tier, ridership_quintile, stop_name) VALUE (?, ?, ?, ?)',
+      [stopId, tier, riderQuin, stopName],(err, result)=>{
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to add station", [])
+        }
+        else {
+          response(req, res, 100, "Success to add station", [])
+        }
+      })
+    }
+    else {
+      console.log(err)
+      response(req, res, -200, "Organization Error", [])
+    }
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
+//정류장 출력
+router.get('/stations/:org/:modify',(req, res, next)=>{
+  try {
+    const org = req.params.org
+    const modify = req.params.modify
+    if(org=='MARTA'){
+      db.query('SELECT * FROM marta_bus_table WHERE modify=? ORDER BY pk DESC',[modify], (err, result)=>{
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to take station", [])
+        }
+        else {
+          response(req, res, 100, "Success to take station", result)
+        }
+      })
+    }
+    else if(org=='ATLDOT'){
+      db.query('SELECT * FROM atldot_bus_table WHERE modify=? ORDER BY pk DESC',[modify], (err, result)=>{
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to take station", [])
+        }
+        else {
+          console.log(result)
+          response(req, res, 100, "Success to take station", [result])
+        }
+      })
+    }
+    else {
+      console.log(err)
+      response(req, res, -200, "Organization Error", [])
+    }
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
+// 리스트 오른쪽으로 이동
+router.post('/addmodify',(req, res, next)=>{
+  try {
+    const pk = req.body.pk
+    const org = req.body.org
+    if(org=='MARTA'){
+      db.query('UPDATE marta_bus_table SET modify=1 WHERE pk=?',[pk],(err, result)=>{
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to change modify", [])
+        }
+        else {
+          response(req, res, 100, "Success to change modify", [])
+        }
+      })
+    }
+    else if(org=='ATLDOT'){
+      db.query('UPDATE atldot_bus_table SET modify=1 WHERE pk=?',[pk],(err, result)=>{
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to change modify", [])
+        }
+        else {
+          response(req, res, 100, "Success to change modify", [])
+        }
+      })
+    }
+    else{
+      console.log(err)
+      response(req, res, -200, "Organization Error", [])
+    }
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
+//matra 추가
+router.post('/addproblem', (req, res, next) => {
+  try {
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
+//atldot 추가
+router.post('/addsuggestion', (req, res, next) => {
+  try {
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
+//problem 출력
+router.get('/problems/:pk', (req, res, next) => {
+  try {
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
+//suggestion 출력
+router.get('/suggestions/:pk', (req, res, next) => {
+  try {
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
 //영화 리스트 출력
 router.get('/movie:page', (req, res, next) => {
   try {
