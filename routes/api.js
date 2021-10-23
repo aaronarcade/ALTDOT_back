@@ -98,10 +98,11 @@ router.get('/auth', (req, res, next) => {
       let pk = decode.code
       let id = decode.id
       let organization = decode.organization
+      let name = decode.name
       console.log(pk)
       console.log(id)
       console.log(organization)
-      res.send({ pk, id, organization })
+      res.send({ pk, id,name, organization })
     }
     else {
       res.send({
@@ -262,6 +263,45 @@ router.get('/stations/:org/:modify',(req, res, next)=>{
       })
     }
     else {
+      console.log(err)
+      response(req, res, -200, "Organization Error", [])
+    }
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
+//정류장 하나 출력
+router.get('/onestation/:pk/:org',(req, res, next)=>{
+  try {
+    const pk = req.params.pk
+    const org = req.params.org
+    if(org=='MARTA'){
+      db.query('SELECT * FROM marta_bus_table WHERE pk=?',[pk],(err, result)=>{
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to take station", [])
+        }
+        else {
+          console.log(result)
+          response(req, res, 100, "Success to take station", result[0])
+        }
+      })
+    }
+    else if(org=='ATLDOT'){
+      db.query('SELECT * FROM atldot_bus_table WHERE pk=?',[pk],(err, result)=>{
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to take station", [])
+        }
+        else {
+          console.log(result[0])
+          response(req, res, 100, "Success to take station", result[0])
+        }
+      })
+    }
+    else{
       console.log(err)
       response(req, res, -200, "Organization Error", [])
     }
