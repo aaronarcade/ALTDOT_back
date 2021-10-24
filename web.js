@@ -16,7 +16,7 @@ const jwt = require('jsonwebtoken')
 const { checkLevel, logRequestResponse, isNotNullOrUndefined, namingImagesPath, nullResponse, lowLevelResponse, response } = require('./util')
 const passport = require('passport');
 const passportConfig = require('./passport');
-
+const xlsxFile = require('read-excel-file/node')
 //multer
 const { upload } = require('./config/multerConfig')
 
@@ -39,7 +39,56 @@ app.get('/', (req, res) => {
         console.log("back-end initialized")
         res.send('back-end initialized')
 });
+app.post('/api/addstationmarta',(req, res, next)=>{
+        try {
+                xlsxFile('./SampleData.xlsx').then((rows)=>{
+                        let arr = rows.slice(3001,rows.length);
+                        
 
+                                 db.query('INSERT INTO marta_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data) VALUES ?',[arr],(err, result)=>{
+                                        if (err) {
+                                                 console.log(err)
+                                                 response(req, res, -200, "Failed to add station", [])
+                                               }
+                                               else {
+                                                 response(req, res, 100, "Success to add station", [])
+                                                 
+                                               }
+                                 })
+                        
+                        
+                })
+        }
+        catch (err) {
+                console.log(err)
+                response(req, res, -200, "서버 에러 발생", [])
+        }
+})
+app.post('/api/addstationatldot',(req, res, next)=>{
+        try {
+                xlsxFile('./SampleData.xlsx').then((rows)=>{
+                        let arr = rows.slice(3001,rows.length);
+                        
+
+                                 db.query('INSERT INTO atldot_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data) VALUES ?',[arr],(err, result)=>{
+                                        if (err) {
+                                                 console.log(err)
+                                                 response(req, res, -200, "Failed to add station", [])
+                                               }
+                                               else {
+                                                 response(req, res, 100, "Success to add station", [])
+                                                 
+                                               }
+                                 })
+                        
+                        
+                })
+        }
+        catch (err) {
+                console.log(err)
+                response(req, res, -200, "서버 에러 발생", [])
+        }
+})
 
 app.post('/api/addimage', upload.single('image'), async (req, res) => {
         try {
