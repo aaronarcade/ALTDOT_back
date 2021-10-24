@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
                 else if(file.fieldname === 'qrImage')
                         cb(null, __dirname + '/../image/qr/')
                 else
-                        cb(null, __dirname + '/../image/ad/')
+                        cb(null, __dirname + '/../image/')
         },
         filename: function (req, file, cb) {
                 if(file.fieldname === 'mainImage')
@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
                 else if(file.fieldname === 'qrImage')
                         cb(null, Date.now() + '-emartqr.' + file.mimetype.split('/')[1])
                 else
-                        cb(null, Date.now() + '-emartad.' + file.mimetype.split('/')[1])
+                        cb(null, Date.now() + '-atldotmarta.' + file.mimetype.split('/')[1])
                 
         }
 })

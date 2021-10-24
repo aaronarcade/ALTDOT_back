@@ -99,10 +99,7 @@ router.get('/auth', (req, res, next) => {
       let id = decode.id
       let organization = decode.organization
       let name = decode.name
-      console.log(pk)
-      console.log(id)
-      console.log(organization)
-      res.send({ pk, id,name, organization })
+      res.send({ pk, id, name, organization })
     }
     else {
       res.send({
@@ -128,7 +125,6 @@ router.post('/login', (req, res, next) => {
       try {
         const id = req.body.id
         const organization = req.body.organization
-        console.log(organization)
         await db.query('SELECT * FROM user_table WHERE user_name=?', [id], (err, result) => {
           if (err) {
             console.log(err)
@@ -158,7 +154,7 @@ router.post('/login', (req, res, next) => {
 
               res.cookie("token", token, { httpOnly: true, maxAge: 60 * 60 * 1000 });
 
-              return response(req, res, 200, 'Welcome to ALTDOT, ' + user.name, []);
+              return response(req, res, 200, 'Welcome to ATLDOT, ' + user.name, []);
             }
           }
         })
@@ -199,30 +195,29 @@ router.post('/addstation', (req, res, next) => {
     const stopName = req.body.stopName
     const problems = req.body.problems
     const suggestions = req.body.suggestions
-    console.log(req.body)
     if (organization == 'MARTA') {
       db.query('INSERT INTO marta_bus_table (stop_id, tier, ridership_quintile, stop_name) VALUE (?, ?, ?, ?)',
-      [stopId, tier, riderQuin, stopName],(err, result)=>{
-        if (err) {
-          console.log(err)
-          response(req, res, -200, "Failed to add station", [])
-        }
-        else {
-          response(req, res, 100, "Success to add station", [])
-        }
-      })
+        [stopId, tier, riderQuin, stopName], (err, result) => {
+          if (err) {
+            console.log(err)
+            response(req, res, -200, "Failed to add station", [])
+          }
+          else {
+            response(req, res, 100, "Success to add station", [])
+          }
+        })
     }
     else if (organization == 'ATLDOT') {
       db.query('INSERT INTO atldot_bus_table (stop_id, tier, ridership_quintile, stop_name) VALUE (?, ?, ?, ?)',
-      [stopId, tier, riderQuin, stopName],(err, result)=>{
-        if (err) {
-          console.log(err)
-          response(req, res, -200, "Failed to add station", [])
-        }
-        else {
-          response(req, res, 100, "Success to add station", [])
-        }
-      })
+        [stopId, tier, riderQuin, stopName], (err, result) => {
+          if (err) {
+            console.log(err)
+            response(req, res, -200, "Failed to add station", [])
+          }
+          else {
+            response(req, res, 100, "Success to add station", [])
+          }
+        })
     }
     else {
       console.log(err)
@@ -235,12 +230,12 @@ router.post('/addstation', (req, res, next) => {
   }
 })
 //정류장 출력
-router.get('/stations/:org/:modify',(req, res, next)=>{
+router.get('/stations/:org/:modify', (req, res, next) => {
   try {
     const org = req.params.org
     const modify = req.params.modify
-    if(org=='MARTA'){
-      db.query('SELECT * FROM marta_bus_table WHERE modify=? ORDER BY pk DESC',[modify], (err, result)=>{
+    if (org == 'MARTA') {
+      db.query('SELECT * FROM marta_bus_table WHERE modify=? ORDER BY pk DESC', [modify], (err, result) => {
         if (err) {
           console.log(err)
           response(req, res, -200, "Failed to take station", [])
@@ -250,14 +245,14 @@ router.get('/stations/:org/:modify',(req, res, next)=>{
         }
       })
     }
-    else if(org=='ATLDOT'){
-      db.query('SELECT * FROM atldot_bus_table WHERE modify=? ORDER BY pk DESC',[modify], (err, result)=>{
+    else if (org == 'ATLDOT') {
+      db.query('SELECT * FROM atldot_bus_table WHERE modify=? ORDER BY pk DESC', [modify], (err, result) => {
         if (err) {
           console.log(err)
           response(req, res, -200, "Failed to take station", [])
         }
         else {
-          console.log(result)
+         
           response(req, res, 100, "Success to take station", [result])
         }
       })
@@ -273,35 +268,35 @@ router.get('/stations/:org/:modify',(req, res, next)=>{
   }
 })
 //정류장 하나 출력
-router.get('/onestation/:pk/:org',(req, res, next)=>{
+router.get('/onestation/:pk/:org', (req, res, next) => {
   try {
     const pk = req.params.pk
     const org = req.params.org
-    if(org=='MARTA'){
-      db.query('SELECT * FROM marta_bus_table WHERE pk=?',[pk],(err, result)=>{
+    if (org == 'MARTA') {
+      db.query('SELECT * FROM marta_bus_table WHERE pk=?', [pk], (err, result) => {
         if (err) {
           console.log(err)
           response(req, res, -200, "Failed to take station", [])
         }
         else {
-          console.log(result)
+          
           response(req, res, 100, "Success to take station", result[0])
         }
       })
     }
-    else if(org=='ATLDOT'){
-      db.query('SELECT * FROM atldot_bus_table WHERE pk=?',[pk],(err, result)=>{
+    else if (org == 'ATLDOT') {
+      db.query('SELECT * FROM atldot_bus_table WHERE pk=?', [pk], (err, result) => {
         if (err) {
           console.log(err)
           response(req, res, -200, "Failed to take station", [])
         }
         else {
-          console.log(result[0])
+          
           response(req, res, 100, "Success to take station", result[0])
         }
       })
     }
-    else{
+    else {
       console.log(err)
       response(req, res, -200, "Organization Error", [])
     }
@@ -312,12 +307,12 @@ router.get('/onestation/:pk/:org',(req, res, next)=>{
   }
 })
 // 리스트 오른쪽으로 이동
-router.post('/addmodify',(req, res, next)=>{
+router.post('/addmodify', (req, res, next) => {
   try {
     const pk = req.body.pk
     const org = req.body.org
-    if(org=='MARTA'){
-      db.query('UPDATE marta_bus_table SET modify=1 WHERE pk=?',[pk],(err, result)=>{
+    if (org == 'MARTA') {
+      db.query('UPDATE marta_bus_table SET modify=1 WHERE pk=?', [pk], (err, result) => {
         if (err) {
           console.log(err)
           response(req, res, -200, "Failed to change modify", [])
@@ -327,8 +322,8 @@ router.post('/addmodify',(req, res, next)=>{
         }
       })
     }
-    else if(org=='ATLDOT'){
-      db.query('UPDATE atldot_bus_table SET modify=1 WHERE pk=?',[pk],(err, result)=>{
+    else if (org == 'ATLDOT') {
+      db.query('UPDATE atldot_bus_table SET modify=1 WHERE pk=?', [pk], (err, result) => {
         if (err) {
           console.log(err)
           response(req, res, -200, "Failed to change modify", [])
@@ -338,7 +333,7 @@ router.post('/addmodify',(req, res, next)=>{
         }
       })
     }
-    else{
+    else {
       console.log(err)
       response(req, res, -200, "Organization Error", [])
     }
@@ -348,9 +343,72 @@ router.post('/addmodify',(req, res, next)=>{
     response(req, res, -200, "Server Error", [])
   }
 })
-//matra 추가
+//problem 추가
 router.post('/addproblem', (req, res, next) => {
   try {
+    const pk = req.body.pk
+    let list = req.body.list
+    list = JSON.parse(list);
+    let arr = [];
+    for (var i = 0; i < list.length; i++) {
+      arr.push([
+        list[i].date,
+        list[i].initiated,
+        list[i].org,
+        list[i].type,
+        list[i].note,
+        pk
+      ]);
+    }
+    console.log(arr)
+    let sql = 'INSERT INTO problem_table (date, name, organization, type, notes, bus_pk) VALUES ?'
+     db.query(sql, [arr], (err, result) => {
+      if (err) {
+        console.log(err)
+        response(req, res, -200, "Failed to insert problems", [])
+      }
+      else {
+        response(req, res, 100, "Success to insert problems", [])
+      }
+    })
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
+//update 교체
+router.post('/updatecreate', (req, res, next) => {
+  try {
+    const createBy = req.body.create
+    const pk = req.body.pk
+    const org = req.body.org
+    if (org == 'MARTA') {
+      db.query('UPDATE marta_bus_table SET create_by=? WHERE pk=?', [createBy, pk], (err, result) => {
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to change creator", [])
+        }
+        else {
+          response(req, res, 100, "Success to change creator", [])
+        }
+      })
+    }
+    else if (org == 'ATLDOT') {
+      db.query('UPDATE atldot_bus_table SET create_by=? WHERE pk=?', [createBy, pk], (err, result) => {
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to change creator", [])
+        }
+        else {
+          response(req, res, 100, "Success to change creator", [])
+        }
+      })
+    }
+    else {
+      console.log(err)
+      response(req, res, -200, "Organization Error", [])
+    }
   }
   catch (err) {
     console.log(err)
@@ -369,6 +427,17 @@ router.post('/addsuggestion', (req, res, next) => {
 //problem 출력
 router.get('/problems/:pk', (req, res, next) => {
   try {
+    const pk = req.params.pk
+    db.query('SELECT * FROM problem_table WHERE bus_pk=? ORDER BY pk DESC', [pk], (err, result) => {
+      if (err) {
+        console.log(err)
+        response(req, res, -200, "Failed to take station", [])
+      }
+      else {
+        
+        response(req, res, 100, "Success to take station", result)
+      }
+    })
   }
   catch (err) {
     console.log(err)
@@ -384,304 +453,30 @@ router.get('/suggestions/:pk', (req, res, next) => {
     response(req, res, -200, "Server Error", [])
   }
 })
-//영화 리스트 출력
-router.get('/movie:page', (req, res, next) => {
-  try {
-    let page = (req.params.page - 1) * 10;
-
-    db.query('SELECT * FROM movies ORDER BY pk DESC LIMIT ?, ?', [page, page + 10], async (err, result) => {
-      if (err) {
-        console.log(err);
-      }
-      else {
-        await db.query('SELECT COUNT(*) FROM movies', (err, resl) => {
-          console.log(resl)
-          response(req, res, 100, { result: result, maxPage: resl })
-        })
-
-
-      }
-    })
-  }
-  catch (err) {
-    console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
-  }
-});
-//영화 수정
-router.put('/updatemovie', upload.single('image'), (req, res) => {
-  try {
-    const decode = checkLevel(req.cookies.token, 40)
-    if (decode) {
-      const pk = req.body.pk;
-      const movieName = req.body.adName;
-      const { image, isNull } = namingImagesPath("movie", req.file)
-      let query = 'UPDATE movies SET '
-      let params = [movieName]
-      let colNames = ['ad_name']
-      if (!isNull) { params.push(image); colNames.push('movie_image') }
-      let { sql, param } = getSQLnParams(query, params, colNames)
-      sql += ' WHERE pk=?'
-      param.push(pk)
-
-      if (param.length == 1)
-        return response(req, res, -200, "입력된 데이터가 없습니다.", [])
-
-      if (isNotNullOrUndefined(param)) {
-        db.query(sql, param, (err, result) => {
-          if (err) {
-            console.log(err)
-            response(req, res, -200, "영화 수정 실패", [])
-          } else {
-            response(req, res, 200, "영화 수정 성공", [])
-          }
-        })
-      }
-    }
-    else
-      lowLevelResponse(req, res)
-  }
-  catch (err) {
-    console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
-  }
-})
-//영화 삭제
-router.post('/deletemovie', (req, res) => {
-  try {
-    const decode = checkLevel(req.cookies.token, 40)
-    if (decode) {
-      const pk = req.body.pk
-      const param = [pk]
-      if (isNotNullOrUndefined(param)) {
-        let sql = "DELETE FROM movies WHERE pk=?"
-        db.query(sql, param, (err, result) => {
-          if (err) {
-            console.log(err)
-            response(req, res, -200, "영화 삭제 실패", [])
-          } else {
-            response(req, res, 200, "영화 삭제 성공", [])
-          }
-        })
-      }
-      else {
-        nullResponse(req, res)
-      }
-    }
-    else
-      lowLevelResponse(req, res)
-  }
-  catch (err) {
-    console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
-  }
-})
-//영화 예매
-router.post('/ticketingmovie', async (req, res) => {
-  try {
-    if (checkLevel(req.cookies.token, 0)) {
-      const userPk = req.body.userPk;
-      const seatNum = req.body.seatNum;
-      const moviePk = req.body.movieNum;
-      await db.query('SELECT seat FROM movies WHERE pk=?', moviePk, async (err, result) => {
-        if (err) {
-          console.log(err);
-        }
-        else {
-          const movie_seat = JSON.parse(result[0].seat);
-          if (movie_seat[seatNum - 1] != 0) {
-            response(req, res, -100, "이미 예약이 된 좌석 입니다.", []);
-          }
-          else {
-            movie_seat[seatNum - 1] = userPk;
-
-            const string = JSON.stringify(movie_seat);
-
-            await db.query('UPDATE movies SET seat=? WHERE pk=?', [string, moviePk], (err, result) => {
-              if (err) {
-                console.log(err);
-              }
-              else {
-                response(req, res, 200, "영화 예매 성공", [])
-              }
-            })
-            await db.query('SELECT my_seat FROM users WHERE pk=?', userPk, async (err, result) => {
-              if (err) {
-                console.log(err);
-              }
-              else {
-                const user_seat = JSON.parse(result[0].my_seat);
-                user_seat.push(moviePk * 100 + seatNum);
-
-                const string = JSON.stringify(user_seat);
-
-                await db.query('UPDATE users SET my_seat=? WHERE pk=?', [string, userPk], (err, result) => {
-                  if (err) {
-                    console.log(err);
-                  }
-                })
-              }
-            })
-          }
-        }
-      })
-    }
-    else
-      lowLevelResponse(req, res);
-  }
-  catch (err) {
-    console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
-  }
-});
-//자신의 프로필 출력
-router.get('/myprofile:pk', (req, res) => {
+//image 불러오기
+router.get('/image/:pk/:org', (req, res, next) => {
   try {
     const pk = req.params.pk
-    if (checkLevel(req.cookies.token, 0)) {
-      db.query('SELECT * FROM users WHERE pk=?', pk, (err, result) => {
+    const org = req.params.org
+    
+      db.query('SELECT * FROM image_table WHERE bus_pk=? AND organization=? ORDER BY pk DESC',[pk,org],(err, result)=>{
         if (err) {
-          console.log(err);
+          console.log(err)
+          response(req, res, -200, "Failed to take image", [])
         }
         else {
-          response(req, res, 200, "프로필 출력 성공", [result])
+          response(req, res, 100, "Success to take image", result[0])
         }
       })
-    }
-    else
-      lowLevelResponse(req, res);
+    
   }
   catch (err) {
     console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
-  }
-});
-//자신이 예매한 영화 출력
-router.get('/ordermovie:pk', (req, res) => {
-  try {
-    const pk = req.params.pk;
-    db.query('SELECT * FROM movies WHERE pk=?', pk, (err, result) => {
-      if (err) {
-        console.log(err)
-      }
-      else {
-        response(req, res, 200, "영화 가져오기 성공", result[0])
-      }
-    })
-  }
-  catch (err) {
-    console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
+    response(req, res, -200, "Server Error", [])
   }
 })
-//영화 예매 취소
-router.post('/cancelmovie', async (req, res) => {
-  try {
-    if (checkLevel(req.cookies.token, 0)) {
-      const userPk = req.body.userPk;
-      const seatNum = req.body.seatNum;
-      const moviePk = req.body.movieNum;
-      await db.query('SELECT seat FROM movies WHERE pk=?', moviePk, async (err, result) => {
-        if (err) {
-          console.log(err);
-        }
-        else {
-          const movie_seat = JSON.parse(result[0].seat);
-          if (movie_seat[seatNum - 1] != 0) {
+//영화 리스트 출력
 
-
-            movie_seat[seatNum - 1] = 0;
-
-            const string = JSON.stringify(movie_seat);
-
-            await db.query('UPDATE movies SET seat=? WHERE pk=?', [string, moviePk], (err, result) => {
-              if (err) {
-                console.log(err);
-              }
-              else {
-                response(req, res, 200, "영화 취소 성공", [])
-              }
-            })
-            await db.query('SELECT my_seat FROM users WHERE pk=?', userPk, async (err, result) => {
-              if (err) {
-                console.log(err);
-              }
-              else {
-                const user_seat = JSON.parse(result[0].my_seat);
-                for (var i = 0; i < user_seat.length; i++) {
-                  if (user_seat[i] == moviePk * 100 + seatNum) {
-                    user_seat.splice(i, 1);
-                    break;
-                  }
-                }
-                const string = JSON.stringify(user_seat);
-                console.log(string)
-                await db.query('UPDATE users SET my_seat=? WHERE pk=?', [string, userPk], (err, result) => {
-                  if (err) {
-                    console.log(err);
-                  }
-                })
-              }
-            })
-
-
-          }
-          else {
-            response(req, res, -100, "이미 취소가 된 좌석 입니다.", []);
-          }
-        }
-      })
-    }
-    else
-      lowLevelResponse(req, res);
-  }
-  catch (err) {
-    console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
-  }
-});
-//광고리스트
-router.get('/ad/:page', async (req, res) => {
-  try {
-    if (checkLevel(req.cookies.token, 40)) {
-      let page = ((req.params.page || req.body.page) - 1) * 10;
-      if (isNotNullOrUndefined([page])) {
-        let keyword = req.query.keyword
-        let rows = {}, adList = {}
-        let table = 'ad_information_tb'
-        let columns = ['ad_name', 'ad_image', 'create_time']
-
-        if (keyword)
-          rows = await getRowsNumWithKeyword(table, columns, keyword)
-        else
-          rows = await getRowsNum(table)
-
-        if (rows.code > 0) {
-          if (keyword)
-            adList = await getDatasWithKeywordAtPage(table, columns, keyword, page)
-          else
-            adList = await getDatasAtPage(table, columns, page)
-
-          if (adList.code > 0)
-            await response(req, res, 200, "광고 조회 성공", { result: adList.result, maxPage: rows.maxPage })
-          else
-            await response(req, res, -200, "광고 조회 실패", []);
-        }
-        else
-          await response(req, res, -200, "광고 조회 실패", [])
-      }
-      else {
-        nullResponse(req, res)
-      }
-    }
-    else
-      lowLevelResponse(req, res)
-  }
-  catch (err) {
-    console.log(err)
-    response(req, res, -200, "서버 에러 발생", [])
-  }
-})
 
 
 module.exports = router;

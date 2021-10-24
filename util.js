@@ -112,10 +112,10 @@ const isNotNullOrUndefined = (paramList) => {
 
 //이미지 저장소 설정
 const namingImagesPath = (api, files) => {
-    if(api == "movie")
+    if(api == "image")
     {
         return { 
-            image: (files) ? "/image/movie/" + files.filename : "/image/ad/defaultMovie.png", 
+            image: (files) ? "/image/" + files.filename : "/image/defaultMovie.png", 
             isNull: !(files) 
         }
     }
