@@ -253,7 +253,7 @@ router.get('/stations/:org/:modify', (req, res, next) => {
         }
         else {
          
-          response(req, res, 100, "Success to take station", [result])
+          response(req, res, 100, "Success to take station", result)
         }
       })
     }
@@ -360,15 +360,34 @@ router.post('/addproblem', (req, res, next) => {
         pk
       ]);
     }
-    console.log(arr)
+    
     let sql = 'INSERT INTO problem_table (date, name, organization, type, notes, bus_pk) VALUES ?'
-     db.query(sql, [arr], (err, result) => {
+     db.query(sql, [arr],async (err, result) => {
       if (err) {
         console.log(err)
         response(req, res, -200, "Failed to insert problems", [])
       }
       else {
-        response(req, res, 100, "Success to insert problems", [])
+        await db.query('SELECT type FROM problem_table WHERE bus_pk=? ORDER BY pk DESC LIMIT 1',[pk], async (err,result)=>{
+          if(err){
+            console.log(err)
+            response(req, res, -200, "Failed to insert problems", [])
+          }
+          else{
+            const problem = result[0].type
+           
+            await db.query('UPDATE marta_bus_table SET problems=? WHERE pk=?',[problem,pk],(err, result)=>{
+              if(err){
+                console.log(err)
+                response(req, res, -200, "Failed to insert problems", [])
+              }
+              else{
+                response(req, res, 100, "Success to insert problems", [])
+              }
+            })
+          }
+        })
+        
       }
     })
   }
@@ -418,6 +437,50 @@ router.post('/updatecreate', (req, res, next) => {
 //atldot 추가
 router.post('/addsuggestion', (req, res, next) => {
   try {
+    const pk = req.body.pk
+    let list = req.body.list
+    list = JSON.parse(list);
+    let arr = [];
+    for (var i = 0; i < list.length; i++) {
+      arr.push([
+        list[i].date,
+        list[i].initiated,
+        list[i].org,
+        list[i].amenity,
+        list[i].note,
+        pk
+      ]);
+    }
+    
+    let sql = 'INSERT INTO suggestion_table (date, name, organization, amenity, notes, bus_pk) VALUES ?'
+     db.query(sql, [arr],async (err, result) => {
+      if (err) {
+        console.log(err)
+        response(req, res, -200, "Failed to insert suggestions", [])
+      }
+      else {
+        await db.query('SELECT amenity FROM suggestion_table WHERE bus_pk=? ORDER BY pk DESC LIMIT 1',[pk], async (err,result)=>{
+          if(err){
+            console.log(err)
+            response(req, res, -200, "Failed to insert suggestions", [])
+          }
+          else{
+            const problem = result[0].amenity
+           
+            await db.query('UPDATE atldot_bus_table SET suggestions=? WHERE pk=?',[problem,pk],(err, result)=>{
+              if(err){
+                console.log(err)
+                response(req, res, -200, "Failed to insert suggestions", [])
+              }
+              else{
+                response(req, res, 100, "Success to insert suggestions", [])
+              }
+            })
+          }
+        })
+        
+      }
+    })
   }
   catch (err) {
     console.log(err)
@@ -447,6 +510,17 @@ router.get('/problems/:pk', (req, res, next) => {
 //suggestion 출력
 router.get('/suggestions/:pk', (req, res, next) => {
   try {
+    const pk = req.params.pk
+    db.query('SELECT * FROM suggestion_table WHERE bus_pk=? ORDER BY pk DESC', [pk], (err, result) => {
+      if (err) {
+        console.log(err)
+        response(req, res, -200, "Failed to take station", [])
+      }
+      else {
+        
+        response(req, res, 100, "Success to take station", result)
+      }
+    })
   }
   catch (err) {
     console.log(err)
