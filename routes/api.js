@@ -242,7 +242,7 @@ router.get('/stations/:org/:modify', (req, res, next) => {
     page = page*100
     
     if (org == 'MARTA') {
-      db.query('SELECT * FROM marta_bus_table WHERE modify=? AND stop_name LIKE ? ORDER BY pk DESC LIMIT ?, 10', [modify,keyword,page], (err, result) => {
+      db.query('SELECT * FROM marta_bus_table WHERE modify=? AND stop_name LIKE ? OR stop_id LIKE ? ORDER BY pk DESC LIMIT ?, 10', [modify,keyword,keyword,page], (err, result) => {
         if (err) {
           console.log(err)
           response(req, res, -200, "Failed to take station", [])
@@ -253,7 +253,7 @@ router.get('/stations/:org/:modify', (req, res, next) => {
       })
     }
     else if (org == 'ATLDOT') {
-      db.query('SELECT * FROM atldot_bus_table WHERE modify=? AND stop_name LIKE ?  ORDER BY pk DESC LIMIT ?, 10', [modify,keyword,page], (err, result) => {
+      db.query('SELECT * FROM atldot_bus_table WHERE modify=? AND stop_name LIKE ?OR stop_id LIKE ?   ORDER BY pk DESC LIMIT ?, 10', [modify,keyword,keyword,page], (err, result) => {
         if (err) {
           console.log(err)
           response(req, res, -200, "Failed to take station", [])
