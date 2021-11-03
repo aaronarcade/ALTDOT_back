@@ -234,34 +234,148 @@ router.get('/stations/:org/:modify', (req, res, next) => {
   try {
     const org = req.params.org
     const modify = req.params.modify
-    
-    
+    console.log(modify)
+
+
     let keyword = req.query.keyword
-    keyword = '%'+keyword+'%'
+    keyword = '%' + keyword + '%'
     let page = req.query.page
-    page = page*100
-    
+    page = page * 100
+    console.log(req.query.top200)
     if (org == 'MARTA') {
-      db.query('SELECT * FROM marta_bus_table WHERE modify=? AND stop_name LIKE ? OR stop_id LIKE ? ORDER BY pk DESC LIMIT ?, 10', [modify,keyword,keyword,page], (err, result) => {
-        if (err) {
-          console.log(err)
-          response(req, res, -200, "Failed to take station", [])
+      db.query('SELECT ridership_data FROM marta_bus_table ORDER BY ridership_data DESC LIMIT 200', async (err, resl) => {
+        const marta200 = resl[199].ridership_data;
+        let top200 = '';
+        let tier = '';
+        let rq = '';
+        let issue = '';
+        let count = 0;
+        let string = 'AND (';
+        if (req.query.top200 == 'true') {
+          count = 1;
+          top200 = 'ridership_data >= '+marta200+' ';
         }
-        else {
-          response(req, res, 100, "Success to take station", result)
+        if (req.query.tier != '6') {
+          if(count>0){
+            tier = 'AND tier='+req.query.tier+' ';
+          }
+          else{
+            tier = 'tier='+req.query.tier+' ';
+          }
+          count = 2;
         }
+        if (req.query.rq != '6') {
+          if(count>0){
+            rq = 'AND ridership_quintile='+req.query.rq+' ';
+          }
+          else{
+            rq = 'ridership_quintile='+req.query.rq+' ';
+          }
+          count = 3;
+        }
+        if (req.query.issue != '') {
+          if(count>0){
+            issue = "AND problems LIKE '%"+req.query.issue+"%'";
+          }
+          else{
+            issue = "problems LIKE '%"+req.query.issue+"%'";
+          }
+          count = 4;
+        }
+        string = string+ top200+tier+rq+issue+')'
+        let sql = '';
+        if(count>0){
+          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) '+string+'ORDER BY pk DESC LIMIT ?, 200'
+        }
+        else{
+          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ORDER BY pk DESC LIMIT ?, 200';
+        }
+          await db.query(sql, [modify, keyword, keyword, page], (err, result) => {
+            if (err) {
+              console.log(err)
+              response(req, res, -200, "Failed to take station", [])
+            }
+            else {
+              for (var i = 0; i < result.length; i++) {
+                if (result[i].ridership_data >= marta200) {
+                  result[i].color = '#D2EAC7';
+                }
+                else {
+                  result[i].color = 'white';
+                }
+              }
+              response(req, res, 100, "Success to take station", result)
+            }
+          })
       })
     }
     else if (org == 'ATLDOT') {
-      db.query('SELECT * FROM atldot_bus_table WHERE modify=? AND stop_name LIKE ?OR stop_id LIKE ?   ORDER BY pk DESC LIMIT ?, 10', [modify,keyword,keyword,page], (err, result) => {
-        if (err) {
-          console.log(err)
-          response(req, res, -200, "Failed to take station", [])
+      db.query('SELECT ridership_data FROM atldot_bus_table ORDER BY ridership_data DESC LIMIT 200', async (err, resl) => {
+        const atldot200 = resl[199].ridership_data;
+        let top200 = '';
+        let tier = '';
+        let rq = '';
+        let issue = '';
+        let count = 0;
+        let string = 'AND (';
+        console.log(req.query)
+        if (req.query.top200=='true') {
+          count = 1;
+          top200 = 'ridership_data >= '+atldot200+' ';
         }
-        else {
-         
-          response(req, res, 100, "Success to take station", result)
+        if (req.query.tier != '6') {
+          if(count>0){
+            tier = 'AND tier='+req.query.tier+' ';
+          }
+          else{
+            tier = 'tier='+req.query.tier+' ';
+          }
+          count = 2;
         }
+        if (req.query.rq != '6') {
+          if(count>0){
+            rq = 'AND ridership_quintile='+req.query.rq+' ';
+          }
+          else{
+            rq = 'ridership_quintile='+req.query.rq+' ';
+          }
+          count = 3;
+        }
+        if (req.query.issue != '') {
+          if(count>0){
+            issue = "AND suggestions LIKE '%"+req.query.issue+"%'";
+          }
+          else{
+            issue = "suggestions LIKE '%"+req.query.issue+"%'";
+          }
+          count = 4;
+        }
+        string = string+top200+tier+rq+issue+')'
+        let sql = '';
+        if(count>0){
+          sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) '+string+'ORDER BY pk DESC LIMIT ?, 200'
+        }
+        else{
+          sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ORDER BY pk DESC LIMIT ?, 200';
+        }
+       
+          await db.query(sql, [modify, keyword, keyword, page], (err, result) => {
+            if (err) {
+              console.log(err)
+              response(req, res, -200, "Failed to take station", [])
+            }
+            else {
+              for (var i = 0; i < result.length; i++) {
+                if (result[i].ridership_data >= atldot200) {
+                  result[i].color = '#D2EAC7';
+                }
+                else {
+                  result[i].color = 'white';
+                }
+              }
+              response(req, res, 100, "Success to take station", result)
+            }
+          })
       })
     }
     else {
@@ -286,7 +400,7 @@ router.get('/onestation/:pk/:org', (req, res, next) => {
           response(req, res, -200, "Failed to take station", [])
         }
         else {
-          
+
           response(req, res, 100, "Success to take station", result[0])
         }
       })
@@ -298,7 +412,7 @@ router.get('/onestation/:pk/:org', (req, res, next) => {
           response(req, res, -200, "Failed to take station", [])
         }
         else {
-          
+
           response(req, res, 100, "Success to take station", result[0])
         }
       })
@@ -367,34 +481,40 @@ router.post('/addproblem', (req, res, next) => {
         pk
       ]);
     }
-    
+
     let sql = 'INSERT INTO problem_table (date, name, organization, type, notes, bus_pk) VALUES ?'
-     db.query(sql, [arr],async (err, result) => {
+    db.query(sql, [arr], async (err, result) => {
       if (err) {
         console.log(err)
         response(req, res, -200, "Failed to insert problems", [])
       }
       else {
-        await db.query('SELECT type FROM problem_table WHERE bus_pk=? ORDER BY pk DESC LIMIT 1',[pk], async (err,result)=>{
-          if(err){
+
+        await db.query('SELECT DISTINCT type FROM problem_table WHERE bus_pk=? ORDER BY pk DESC', [pk], async (err, result) => {
+          if (err) {
             console.log(err)
             response(req, res, -200, "Failed to insert problems", [])
           }
-          else{
-            const problem = result[0].type
-           
-            await db.query('UPDATE marta_bus_table SET problems=? WHERE pk=?',[problem,pk],(err, result)=>{
-              if(err){
+          else {
+            console.log(result)
+            let string = '';
+            for (var i = 0; i < result.length; i++) {
+              string += result[i].type + ', ';
+            }
+            string = string.substring(0, string.length - 2)
+
+            await db.query('UPDATE marta_bus_table SET problems=? WHERE pk=?', [string, pk], (err, result) => {
+              if (err) {
                 console.log(err)
                 response(req, res, -200, "Failed to insert problems", [])
               }
-              else{
+              else {
                 response(req, res, 100, "Success to insert problems", [])
               }
             })
           }
         })
-        
+
       }
     })
   }
@@ -409,6 +529,7 @@ router.post('/updatecreate', (req, res, next) => {
     const createBy = req.body.create
     const pk = req.body.pk
     const org = req.body.org
+    console.log(req.body)
     if (org == 'MARTA') {
       db.query('UPDATE marta_bus_table SET create_by=? WHERE pk=?', [createBy, pk], (err, result) => {
         if (err) {
@@ -458,34 +579,38 @@ router.post('/addsuggestion', (req, res, next) => {
         pk
       ]);
     }
-    
+
     let sql = 'INSERT INTO suggestion_table (date, name, organization, amenity, notes, bus_pk) VALUES ?'
-     db.query(sql, [arr],async (err, result) => {
+    db.query(sql, [arr], async (err, result) => {
       if (err) {
         console.log(err)
         response(req, res, -200, "Failed to insert suggestions", [])
       }
       else {
-        await db.query('SELECT amenity FROM suggestion_table WHERE bus_pk=? ORDER BY pk DESC LIMIT 1',[pk], async (err,result)=>{
-          if(err){
+        await db.query('SELECT DISTINCT amenity FROM suggestion_table WHERE bus_pk=? ORDER BY pk DESC', [pk], async (err, result) => {
+          if (err) {
             console.log(err)
             response(req, res, -200, "Failed to insert suggestions", [])
           }
-          else{
-            const problem = result[0].amenity
-           
-            await db.query('UPDATE atldot_bus_table SET suggestions=? WHERE pk=?',[problem,pk],(err, result)=>{
-              if(err){
+          else {
+            console.log(result)
+            let string = '';
+            for (var i = 0; i < result.length; i++) {
+              string += result[i].amenity + ', ';
+            }
+            string = string.substring(0, string.length - 2)
+            await db.query('UPDATE atldot_bus_table SET suggestions=? WHERE pk=?', [string, pk], (err, result) => {
+              if (err) {
                 console.log(err)
                 response(req, res, -200, "Failed to insert suggestions", [])
               }
-              else{
+              else {
                 response(req, res, 100, "Success to insert suggestions", [])
               }
             })
           }
         })
-        
+
       }
     })
   }
@@ -504,7 +629,7 @@ router.get('/problems/:pk', (req, res, next) => {
         response(req, res, -200, "Failed to take station", [])
       }
       else {
-        
+
         response(req, res, 100, "Success to take station", result)
       }
     })
@@ -524,7 +649,7 @@ router.get('/suggestions/:pk', (req, res, next) => {
         response(req, res, -200, "Failed to take station", [])
       }
       else {
-        
+
         response(req, res, 100, "Success to take station", result)
       }
     })
@@ -539,17 +664,17 @@ router.get('/image/:pk/:org', (req, res, next) => {
   try {
     const pk = req.params.pk
     const org = req.params.org
-    
-      db.query('SELECT * FROM image_table WHERE bus_pk=? AND organization=? ORDER BY pk DESC',[pk,org],(err, result)=>{
-        if (err) {
-          console.log(err)
-          response(req, res, -200, "Failed to take image", [])
-        }
-        else {
-          response(req, res, 100, "Success to take image", result[0])
-        }
-      })
-    
+
+    db.query('SELECT * FROM image_table WHERE bus_pk=? AND organization=? ORDER BY pk DESC', [pk, org], (err, result) => {
+      if (err) {
+        console.log(err)
+        response(req, res, -200, "Failed to take image", [])
+      }
+      else {
+        response(req, res, 100, "Success to take image", result[0])
+      }
+    })
+
   }
   catch (err) {
     console.log(err)
