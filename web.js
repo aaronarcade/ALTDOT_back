@@ -45,7 +45,7 @@ app.post('/api/addstationmarta',(req, res, next)=>{
                         let arr = rows.slice(3001,rows.length);
                         
 
-                                 db.query('INSERT INTO marta_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data) VALUES ?',[arr],(err, result)=>{
+                                 db.query('INSERT INTO marta_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data,facing_dir, position, ada_access) VALUES ?',[arr],(err, result)=>{
                                         if (err) {
                                                  console.log(err)
                                                  response(req, res, -200, "Failed to add station", [])
@@ -70,7 +70,7 @@ app.post('/api/addstationatldot',(req, res, next)=>{
                         let arr = rows.slice(3001,rows.length);
                         
 
-                                 db.query('INSERT INTO atldot_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data) VALUES ?',[arr],(err, result)=>{
+                                 db.query('INSERT INTO atldot_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data,facing_dir, position, ada_access) VALUES ?',[arr],(err, result)=>{
                                         if (err) {
                                                  console.log(err)
                                                  response(req, res, -200, "Failed to add station", [])
