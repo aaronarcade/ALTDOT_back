@@ -253,60 +253,60 @@ router.get('/stations/:org/:modify', (req, res, next) => {
         let string = 'AND (';
         if (req.query.top200 == 'true') {
           count = 1;
-          top200 = 'ridership_data >= '+marta200+' ';
+          top200 = 'ridership_data >= ' + marta200 + ' ';
         }
         if (req.query.tier != '6') {
-          if(count>0){
-            tier = 'AND tier='+req.query.tier+' ';
+          if (count > 0) {
+            tier = 'AND tier=' + req.query.tier + ' ';
           }
-          else{
-            tier = 'tier='+req.query.tier+' ';
+          else {
+            tier = 'tier=' + req.query.tier + ' ';
           }
           count = 2;
         }
         if (req.query.rq != '6') {
-          if(count>0){
-            rq = 'AND ridership_quintile='+req.query.rq+' ';
+          if (count > 0) {
+            rq = 'AND ridership_quintile=' + req.query.rq + ' ';
           }
-          else{
-            rq = 'ridership_quintile='+req.query.rq+' ';
+          else {
+            rq = 'ridership_quintile=' + req.query.rq + ' ';
           }
           count = 3;
         }
         if (req.query.issue != '') {
-          if(count>0){
-            issue = "AND problems LIKE '%"+req.query.issue+"%'";
+          if (count > 0) {
+            issue = "AND problems LIKE '%" + req.query.issue + "%'";
           }
-          else{
-            issue = "problems LIKE '%"+req.query.issue+"%'";
+          else {
+            issue = "problems LIKE '%" + req.query.issue + "%'";
           }
           count = 4;
         }
-        string = string+ top200+tier+rq+issue+')'
+        string = string + top200 + tier + rq + issue + ')'
         let sql = '';
-        if(count>0){
-          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) '+string+'ORDER BY pk DESC LIMIT ?, 200'
+        if (count > 0) {
+          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ' + string + 'ORDER BY pk DESC LIMIT ?, 200'
         }
-        else{
+        else {
           sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ORDER BY pk DESC LIMIT ?, 200';
         }
-          await db.query(sql, [modify, keyword, keyword, page], (err, result) => {
-            if (err) {
-              console.log(err)
-              response(req, res, -200, "Failed to take station", [])
-            }
-            else {
-              for (var i = 0; i < result.length; i++) {
-                if (result[i].ridership_data >= marta200) {
-                  result[i].color = '#D2EAC7';
-                }
-                else {
-                  result[i].color = 'white';
-                }
+        await db.query(sql, [modify, keyword, keyword, page], (err, result) => {
+          if (err) {
+            console.log(err)
+            response(req, res, -200, "Failed to take station", [])
+          }
+          else {
+            for (var i = 0; i < result.length; i++) {
+              if (result[i].ridership_data >= marta200) {
+                result[i].color = '#D2EAC7';
               }
-              response(req, res, 100, "Success to take station", result)
+              else {
+                result[i].color = 'white';
+              }
             }
-          })
+            response(req, res, 100, "Success to take station", result)
+          }
+        })
       })
     }
     else if (org == 'ATLDOT') {
@@ -319,63 +319,63 @@ router.get('/stations/:org/:modify', (req, res, next) => {
         let count = 0;
         let string = 'AND (';
         console.log(req.query)
-        if (req.query.top200=='true') {
+        if (req.query.top200 == 'true') {
           count = 1;
-          top200 = 'ridership_data >= '+atldot200+' ';
+          top200 = 'ridership_data >= ' + atldot200 + ' ';
         }
         if (req.query.tier != '6') {
-          if(count>0){
-            tier = 'AND tier='+req.query.tier+' ';
+          if (count > 0) {
+            tier = 'AND tier=' + req.query.tier + ' ';
           }
-          else{
-            tier = 'tier='+req.query.tier+' ';
+          else {
+            tier = 'tier=' + req.query.tier + ' ';
           }
           count = 2;
         }
         if (req.query.rq != '6') {
-          if(count>0){
-            rq = 'AND ridership_quintile='+req.query.rq+' ';
+          if (count > 0) {
+            rq = 'AND ridership_quintile=' + req.query.rq + ' ';
           }
-          else{
-            rq = 'ridership_quintile='+req.query.rq+' ';
+          else {
+            rq = 'ridership_quintile=' + req.query.rq + ' ';
           }
           count = 3;
         }
         if (req.query.issue != '') {
-          if(count>0){
-            issue = "AND suggestions LIKE '%"+req.query.issue+"%'";
+          if (count > 0) {
+            issue = "AND suggestions LIKE '%" + req.query.issue + "%'";
           }
-          else{
-            issue = "suggestions LIKE '%"+req.query.issue+"%'";
+          else {
+            issue = "suggestions LIKE '%" + req.query.issue + "%'";
           }
           count = 4;
         }
-        string = string+top200+tier+rq+issue+')'
+        string = string + top200 + tier + rq + issue + ')'
         let sql = '';
-        if(count>0){
-          sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) '+string+'ORDER BY pk DESC LIMIT ?, 200'
+        if (count > 0) {
+          sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ' + string + 'ORDER BY pk DESC LIMIT ?, 200'
         }
-        else{
+        else {
           sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ORDER BY pk DESC LIMIT ?, 200';
         }
-       
-          await db.query(sql, [modify, keyword, keyword, page], (err, result) => {
-            if (err) {
-              console.log(err)
-              response(req, res, -200, "Failed to take station", [])
-            }
-            else {
-              for (var i = 0; i < result.length; i++) {
-                if (result[i].ridership_data >= atldot200) {
-                  result[i].color = '#D2EAC7';
-                }
-                else {
-                  result[i].color = 'white';
-                }
+
+        await db.query(sql, [modify, keyword, keyword, page], (err, result) => {
+          if (err) {
+            console.log(err)
+            response(req, res, -200, "Failed to take station", [])
+          }
+          else {
+            for (var i = 0; i < result.length; i++) {
+              if (result[i].ridership_data >= atldot200) {
+                result[i].color = '#D2EAC7';
               }
-              response(req, res, 100, "Success to take station", result)
+              else {
+                result[i].color = 'white';
+              }
             }
-          })
+            response(req, res, 100, "Success to take station", result)
+          }
+        })
       })
     }
     else {
@@ -465,56 +465,88 @@ router.post('/addmodify', (req, res, next) => {
   }
 })
 //problem 추가
-router.post('/addproblem', (req, res, next) => {
+router.post('/addproblem', async (req, res, next) => {
   try {
     const pk = req.body.pk
     let list = req.body.list
+    console.log(req.body)
     list = JSON.parse(list);
     let arr = [];
     for (var i = 0; i < list.length; i++) {
-      arr.push([
-        list[i].date,
-        list[i].initiated,
-        list[i].org,
-        list[i].type,
-        list[i].note,
-        pk
-      ]);
+      if (list[i].status != 'Requested') {
+          arr.push([
+            list[i].date,
+            list[i].name,
+            list[i].organization,
+            list[i].type,
+            list[i].status,
+            list[i].notes,
+            pk
+          ]);
+      }
     }
-
-    let sql = 'INSERT INTO problem_table (date, name, organization, type, notes, bus_pk) VALUES ?'
-    db.query(sql, [arr], async (err, result) => {
+    await db.query('DELETE FROM problem_table WHERE status!="Complete"', async (err, result) => {
       if (err) {
-        console.log(err)
-        response(req, res, -200, "Failed to insert problems", [])
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to insert problems", [])
+        }
       }
       else {
-
-        await db.query('SELECT DISTINCT type FROM problem_table WHERE bus_pk=? ORDER BY pk DESC', [pk], async (err, result) => {
+        let sql = 'INSERT INTO problem_table (date, name, organization, type, status, notes, bus_pk) VALUES ?'
+        await db.query(sql, [arr], async (err, result) => {
           if (err) {
             console.log(err)
             response(req, res, -200, "Failed to insert problems", [])
           }
           else {
-            console.log(result)
-            let string = '';
-            for (var i = 0; i < result.length; i++) {
-              string += result[i].type + ', ';
-            }
-            string = string.substring(0, string.length - 2)
 
-            await db.query('UPDATE marta_bus_table SET problems=? WHERE pk=?', [string, pk], (err, result) => {
+            await db.query('SELECT DISTINCT type FROM problem_table WHERE bus_pk=? AND status="Complete" ORDER BY pk DESC', [pk], async (err, result) => {
               if (err) {
                 console.log(err)
                 response(req, res, -200, "Failed to insert problems", [])
               }
               else {
-                response(req, res, 100, "Success to insert problems", [])
+                console.log(result)
+                let string = '';
+                for (var i = 0; i < result.length; i++) {
+                  string += result[i].type + ', ';
+                }
+                string = string.substring(0, string.length - 2)
+
+                await db.query('UPDATE marta_bus_table SET problems=? WHERE pk=?', [string, pk], (err, result) => {
+                  if (err) {
+                    console.log(err)
+                    response(req, res, -200, "Failed to insert problems", [])
+                  }
+                  else {
+                    response(req, res, 100, "Success to insert problems", [])
+                  }
+                })
               }
             })
+
           }
         })
-
+      }
+    })
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
+//problem 삭제
+router.post('/deleteproblem', async (req, res, next) => {
+  try {
+    const pk = req.body.pk
+    db.query('DELETE FROM problem_table WHERE pk=?',[pk],(err, result)=>{
+      if (err) {
+        console.log(err)
+        response(req, res, -200, "Failed to delete problem", [])
+      }
+      else {
+        response(req, res, 100, "Success to delete problem", [])
       }
     })
   }
@@ -562,7 +594,7 @@ router.post('/updatecreate', (req, res, next) => {
     response(req, res, -200, "Server Error", [])
   }
 })
-//atldot 추가
+//suggestion 추가
 router.post('/addsuggestion', (req, res, next) => {
   try {
     const pk = req.body.pk
@@ -575,7 +607,7 @@ router.post('/addsuggestion', (req, res, next) => {
         list[i].initiated,
         list[i].org,
         list[i].amenity,
-        list[i].note,
+        list[i].notes,
         pk
       ]);
     }
@@ -623,16 +655,35 @@ router.post('/addsuggestion', (req, res, next) => {
 router.get('/problems/:pk', (req, res, next) => {
   try {
     const pk = req.params.pk
-    db.query('SELECT * FROM problem_table WHERE bus_pk=? ORDER BY pk DESC', [pk], (err, result) => {
-      if (err) {
-        console.log(err)
-        response(req, res, -200, "Failed to take station", [])
-      }
-      else {
+    const status = req.query.status
+    if (status == 'Complete') {
+      db.query('SELECT * FROM problem_table WHERE bus_pk=? AND status=? ORDER BY pk DESC', [pk, status], (err, result) => {
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to take station", [])
+        }
+        else {
+          console.log(100)
+          response(req, res, 100, "Success to take station", result)
+        }
+      })
+    }
+    else {
+      db.query('SELECT * FROM problem_table WHERE bus_pk=? AND status!="Complete" ORDER BY pk DESC', [pk], (err, result) => {
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to take station", [])
+        }
+        else {
+          console.log(result)
+          for (var i = 0; i < result.length; i++) {
+            result[i].firststatus = result[i].status
+          }
+          response(req, res, 100, "Success to take station", result)
+        }
+      })
+    }
 
-        response(req, res, 100, "Success to take station", result)
-      }
-    })
   }
   catch (err) {
     console.log(err)
