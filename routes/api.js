@@ -249,6 +249,7 @@ router.get('/stations/:org/:modify', (req, res, next) => {
         let tier = '';
         let rq = '';
         let issue = '';
+        let ada = '';
         let count = 0;
         let string = 'AND (';
         if (req.query.top200 == 'true') {
@@ -282,7 +283,16 @@ router.get('/stations/:org/:modify', (req, res, next) => {
           }
           count = 4;
         }
-        string = string + top200 + tier + rq + issue + ')'
+        if(req.query.ada != ''){
+          if (count > 0) {
+            ada = "AND ada_access='" + req.query.ada + "' ";
+          }
+          else {
+            ada = "ada_access='" + req.query.ada + "' ";
+          }
+          count = 5;
+        }
+        string = string + top200 + tier + rq + issue +ada + ')'
         let sql = '';
         if (count > 0) {
           sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ' + string + 'ORDER BY pk DESC LIMIT ?, 200'
@@ -316,6 +326,7 @@ router.get('/stations/:org/:modify', (req, res, next) => {
         let tier = '';
         let rq = '';
         let issue = '';
+        let ada = '';
         let count = 0;
         let string = 'AND (';
         console.log(req.query)
@@ -350,7 +361,16 @@ router.get('/stations/:org/:modify', (req, res, next) => {
           }
           count = 4;
         }
-        string = string + top200 + tier + rq + issue + ')'
+        if(req.query.ada != ''){
+          if (count > 0) {
+            ada = "AND ada_access='" + req.query.ada + "' ";
+          }
+          else {
+            ada = "ada_access='" + req.query.ada + "' ";
+          }
+          count = 5;
+        }
+        string = string + top200 + tier + rq + issue + ada + ')'
         let sql = '';
         if (count > 0) {
           sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ' + string + 'ORDER BY pk DESC LIMIT ?, 200'
@@ -464,6 +484,43 @@ router.post('/addmodify', (req, res, next) => {
     response(req, res, -200, "Server Error", [])
   }
 })
+//다시 왼쪽으로 이동
+router.post('/stopmodify', (req, res, next) => {
+  try {
+    const pk = req.body.pk
+    const org = req.body.org
+    if (org == 'MARTA') {
+      db.query('UPDATE marta_bus_table SET modify=0 WHERE pk=?', [pk], (err, result) => {
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to change modify", [])
+        }
+        else {
+          response(req, res, 100, "Success to change modify", [])
+        }
+      })
+    }
+    else if (org == 'ATLDOT') {
+      db.query('UPDATE atldot_bus_table SET modify=0 WHERE pk=?', [pk], (err, result) => {
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to change modify", [])
+        }
+        else {
+          response(req, res, 100, "Success to change modify", [])
+        }
+      })
+    }
+    else {
+      console.log(err)
+      response(req, res, -200, "Organization Error", [])
+    }
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
 //problem 추가
 router.post('/addproblem', async (req, res, next) => {
   try {
@@ -473,7 +530,6 @@ router.post('/addproblem', async (req, res, next) => {
     list = JSON.parse(list);
     let arr = [];
     for (var i = 0; i < list.length; i++) {
-      if (list[i].status != 'Requested') {
           arr.push([
             list[i].date,
             list[i].name,
@@ -483,7 +539,6 @@ router.post('/addproblem', async (req, res, next) => {
             list[i].notes,
             pk
           ]);
-      }
     }
     await db.query('DELETE FROM problem_table WHERE status!="Complete"', async (err, result) => {
       if (err) {
@@ -540,13 +595,78 @@ router.post('/addproblem', async (req, res, next) => {
 router.post('/deleteproblem', async (req, res, next) => {
   try {
     const pk = req.body.pk
-    db.query('DELETE FROM problem_table WHERE pk=?',[pk],(err, result)=>{
+    await db.query('DELETE FROM problem_table WHERE pk=?',[pk],async(err, result)=>{
       if (err) {
         console.log(err)
         response(req, res, -200, "Failed to delete problem", [])
       }
       else {
-        response(req, res, 100, "Success to delete problem", [])
+        await db.query('SELECT DISTINCT type FROM problem_table WHERE bus_pk=? AND status="Complete" ORDER BY pk DESC', [pk], async (err, result) => {
+          if (err) {
+            console.log(err)
+            response(req, res, -200, "Failed to delete problem", [])
+          }
+          else {
+            console.log(result)
+            let string = '';
+            for (var i = 0; i < result.length; i++) {
+              string += result[i].type + ', ';
+            }
+            string = string.substring(0, string.length - 2)
+
+            await db.query('UPDATE marta_bus_table SET problems=? WHERE pk=?', [string, pk], (err, result) => {
+              if (err) {
+                console.log(err)
+                response(req, res, -200, "Failed to delete problem", [])
+              }
+              else {
+                response(req, res, 100, "Success to delete problem", [])
+              }
+            })
+          }
+        })
+      }
+    })
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
+//suggestion 삭제
+router.post('/deletesuggestion', async (req, res, next) => {
+  try {
+    const pk = req.body.pk
+    await db.query('DELETE FROM suggestion_table WHERE pk=?',[pk],async(err, result)=>{
+      if (err) {
+        console.log(err)
+        response(req, res, -200, "Failed to delete suggestion", [])
+      }
+      else {
+        await db.query('SELECT DISTINCT amenity FROM suggestion_table WHERE bus_pk=? AND status="Complete" ORDER BY pk DESC', [pk], async (err, result) => {
+          if (err) {
+            console.log(err)
+            response(req, res, -200, "Failed to delete suggestion", [])
+          }
+          else {
+            console.log(result,652)
+            let string = '';
+            for (var i = 0; i < result.length; i++) {
+              string += result[i].amenity + ', ';
+            }
+            string = string.substring(0, string.length - 2)
+            console.log(string,658)
+            await db.query('UPDATE atldot_bus_table SET suggestions=? WHERE pk=?', [string, pk], (err, result) => {
+              if (err) {
+                console.log(err)
+                response(req, res, -200, "Failed to delete suggestion", [])
+              }
+              else {
+                response(req, res, 100, "Success to delete suggestion", [])
+              }
+            })
+          }
+        })
       }
     })
   }
@@ -595,54 +715,69 @@ router.post('/updatecreate', (req, res, next) => {
   }
 })
 //suggestion 추가
-router.post('/addsuggestion', (req, res, next) => {
+router.post('/addsuggestion', async (req, res, next) => {
   try {
     const pk = req.body.pk
     let list = req.body.list
+    console.log(req.body)
     list = JSON.parse(list);
     let arr = [];
     for (var i = 0; i < list.length; i++) {
-      arr.push([
-        list[i].date,
-        list[i].initiated,
-        list[i].org,
-        list[i].amenity,
-        list[i].notes,
-        pk
-      ]);
+      
+          arr.push([
+            list[i].date,
+            list[i].name,
+            list[i].organization,
+            list[i].type,
+            list[i].status,
+            list[i].notes,
+            pk
+          ]);
+        
     }
-
-    let sql = 'INSERT INTO suggestion_table (date, name, organization, amenity, notes, bus_pk) VALUES ?'
-    db.query(sql, [arr], async (err, result) => {
+    await db.query('DELETE FROM suggestion_table WHERE status!="Complete"', async (err, result) => {
       if (err) {
-        console.log(err)
-        response(req, res, -200, "Failed to insert suggestions", [])
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to insert suggestions", [])
+        }
       }
       else {
-        await db.query('SELECT DISTINCT amenity FROM suggestion_table WHERE bus_pk=? ORDER BY pk DESC', [pk], async (err, result) => {
+        let sql = 'INSERT INTO suggestion_table (date, name, organization, amenity, status, notes, bus_pk) VALUES ?'
+        await db.query(sql, [arr], async (err, result) => {
           if (err) {
             console.log(err)
             response(req, res, -200, "Failed to insert suggestions", [])
           }
           else {
-            console.log(result)
-            let string = '';
-            for (var i = 0; i < result.length; i++) {
-              string += result[i].amenity + ', ';
-            }
-            string = string.substring(0, string.length - 2)
-            await db.query('UPDATE atldot_bus_table SET suggestions=? WHERE pk=?', [string, pk], (err, result) => {
+
+            await db.query('SELECT DISTINCT amenity FROM suggestion_table WHERE bus_pk=? AND status="Complete" ORDER BY pk DESC', [pk], async (err, result) => {
               if (err) {
                 console.log(err)
                 response(req, res, -200, "Failed to insert suggestions", [])
               }
               else {
-                response(req, res, 100, "Success to insert suggestions", [])
+                console.log(result)
+                let string = '';
+                for (var i = 0; i < result.length; i++) {
+                  string += result[i].amenity + ', ';
+                }
+                string = string.substring(0, string.length - 2)
+
+                await db.query('UPDATE atldot_bus_table SET suggestions=? WHERE pk=?', [string, pk], (err, result) => {
+                  if (err) {
+                    console.log(err)
+                    response(req, res, -200, "Failed to insert suggestions", [])
+                  }
+                  else {
+                    response(req, res, 100, "Success to insert suggestions", [])
+                  }
+                })
               }
             })
+
           }
         })
-
       }
     })
   }
@@ -669,7 +804,7 @@ router.get('/problems/:pk', (req, res, next) => {
       })
     }
     else {
-      db.query('SELECT * FROM problem_table WHERE bus_pk=? AND status!="Complete" ORDER BY pk DESC', [pk], (err, result) => {
+      db.query('SELECT * FROM problem_table WHERE bus_pk=? AND status!="Complete" ORDER BY pk ASC', [pk], (err, result) => {
         if (err) {
           console.log(err)
           response(req, res, -200, "Failed to take station", [])
@@ -694,16 +829,35 @@ router.get('/problems/:pk', (req, res, next) => {
 router.get('/suggestions/:pk', (req, res, next) => {
   try {
     const pk = req.params.pk
-    db.query('SELECT * FROM suggestion_table WHERE bus_pk=? ORDER BY pk DESC', [pk], (err, result) => {
-      if (err) {
-        console.log(err)
-        response(req, res, -200, "Failed to take station", [])
-      }
-      else {
+    const status = req.query.status
+    if (status == 'Complete') {
+      db.query('SELECT * FROM suggestion_table WHERE bus_pk=? AND status=? ORDER BY pk DESC', [pk, status], (err, result) => {
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to take station", [])
+        }
+        else {
+          console.log(100)
+          response(req, res, 100, "Success to take station", result)
+        }
+      })
+    }
+    else {
+      db.query('SELECT * FROM suggestion_table WHERE bus_pk=? AND status!="Complete" ORDER BY pk ASC', [pk], (err, result) => {
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to take station", [])
+        }
+        else {
+          console.log(result)
+          for (var i = 0; i < result.length; i++) {
+            result[i].firststatus = result[i].status
+          }
+          response(req, res, 100, "Success to take station", result)
+        }
+      })
+    }
 
-        response(req, res, 100, "Success to take station", result)
-      }
-    })
   }
   catch (err) {
     console.log(err)
@@ -732,7 +886,7 @@ router.get('/image/:pk/:org', (req, res, next) => {
     response(req, res, -200, "Server Error", [])
   }
 })
-//영화 리스트 출력
+
 
 
 
