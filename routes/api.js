@@ -243,7 +243,7 @@ router.get('/stations/:org/:modify', (req, res, next) => {
     page = page * 100
     console.log(req.query.top200)
     if (org == 'MARTA') {
-      db.query('SELECT ridership_data FROM marta_bus_table ORDER BY ridership_data DESC LIMIT 200', async (err, resl) => {
+      db.query('SELECT ridership_data FROM marta_bus_table ORDER BY ridership_data DESC  LIMIT 200', async (err, resl) => {
         const marta200 = resl[199].ridership_data;
         let top200 = '';
         let tier = '';
@@ -295,12 +295,12 @@ router.get('/stations/:org/:modify', (req, res, next) => {
         string = string + top200 + tier + rq + issue +ada + ')'
         let sql = '';
         if (count > 0) {
-          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ' + string + 'ORDER BY pk DESC LIMIT ?, 200'
+          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR problems LIKE ?) ' + string + 'ORDER BY pk DESC LIMIT ? , 200'
         }
         else {
-          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ORDER BY pk DESC LIMIT ?, 200';
+          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR problems LIKE ?) ORDER BY pk DESC LIMIT ? , 200';
         }
-        await db.query(sql, [modify, keyword, keyword, page], (err, result) => {
+        await db.query(sql, [modify, keyword, keyword,keyword, page], (err, result) => {
           if (err) {
             console.log(err)
             response(req, res, -200, "Failed to take station", [])
@@ -373,13 +373,13 @@ router.get('/stations/:org/:modify', (req, res, next) => {
         string = string + top200 + tier + rq + issue + ada + ')'
         let sql = '';
         if (count > 0) {
-          sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ' + string + 'ORDER BY pk DESC LIMIT ?, 200'
+          sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR suggestions LIKE ?) ' + string + 'ORDER BY pk DESC LIMIT ? , 200'
         }
         else {
-          sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ORDER BY pk DESC LIMIT ?, 200';
+          sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR suggestions LIKE ?) ORDER BY pk DESC LIMIT ? , 200';
         }
 
-        await db.query(sql, [modify, keyword, keyword, page], (err, result) => {
+        await db.query(sql, [modify, keyword, keyword,keyword, page], (err, result) => {
           if (err) {
             console.log(err)
             response(req, res, -200, "Failed to take station", [])
