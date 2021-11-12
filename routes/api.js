@@ -239,9 +239,8 @@ router.get('/stations/:org/:modify', (req, res, next) => {
 
     let keyword = req.query.keyword
     keyword = '%' + keyword + '%'
-    let page = req.query.page
-    page = page * 100
-    console.log(req.query.top200)
+    let page = (req.query.page-1)*200
+    console.log(req.query)
     if (org == 'MARTA') {
       db.query('SELECT ridership_data FROM marta_bus_table ORDER BY ridership_data DESC  LIMIT 200', async (err, resl) => {
         const marta200 = resl[199].ridership_data;
@@ -295,11 +294,12 @@ router.get('/stations/:org/:modify', (req, res, next) => {
         string = string + top200 + tier + rq + issue +ada + ')'
         let sql = '';
         if (count > 0) {
-          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR problems LIKE ?) ' + string + 'ORDER BY pk DESC LIMIT ? , 200'
+          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR problems LIKE ?) ' + string + ' ORDER BY pk DESC LIMIT ? , 200'
         }
         else {
           sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR problems LIKE ?) ORDER BY pk DESC LIMIT ? , 200';
         }
+        console.log(sql)
         await db.query(sql, [modify, keyword, keyword,keyword, page], (err, result) => {
           if (err) {
             console.log(err)
