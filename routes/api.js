@@ -926,6 +926,13 @@ router.get('/problems/:pk', (req, res, next) => {
         else {
           console.log(result)
           for (var i = 0; i < result.length; i++) {
+            if(result[i].type=='Curb Conflict'||result[i].type=='Sidewalk Improv'||result[i].type=='Sidewalk Conn'||result[i].type=='ADA'||result[i].type=='ROW'||result[i].type=='Streetlight'||
+            result[i].type=='Crossing'||result[i].type=='Vegetation'||result[i].type=='Construction'||result[i].type=='Trash'||result[i].type=='Trash Can'||result[i].type=='Homeless'){
+              result[i].firsttype = result[i].type
+            }
+            else{
+              result[i].firsttype = 'Other'
+            }
             result[i].firststatus = result[i].status
           }
           response(req, res, 100, "Success to take station", result)
@@ -951,7 +958,7 @@ router.get('/suggestions/:pk', (req, res, next) => {
           response(req, res, -200, "Failed to take station", [])
         }
         else {
-          console.log(100)
+
           response(req, res, 100, "Success to take station", result)
         }
       })
@@ -966,6 +973,12 @@ router.get('/suggestions/:pk', (req, res, next) => {
           console.log(result)
           for (var i = 0; i < result.length; i++) {
             result[i].firststatus = result[i].status
+            if(result[i].amenity=='Bench'||result[i].amenity=='Simme Seat'||result[i].amenity=='Shelter'||result[i].amenity=='Pad'||result[i].amenity=='Trash Can'){
+              result[i].firstamenity = result[i].amenity
+            }
+            else{
+              result[i].firstamenity = 'Other'
+            }
           }
           response(req, res, 100, "Success to take station", result)
         }
