@@ -408,6 +408,165 @@ router.get('/stations/:org/:modify', (req, res, next) => {
     response(req, res, -200, "Server Error", [])
   }
 })
+//페이지 갯수만 출력
+router.get('/maxpage/:org/:modify', (req, res, next) => {
+  try {
+    const org = req.params.org
+    const modify = req.params.modify
+    console.log(modify)
+    let keyword = req.query.keyword
+    keyword = '%' + keyword + '%'
+    console.log(req.query.top200)
+    if (org == 'MARTA') {
+      db.query('SELECT ridership_data FROM marta_bus_table ORDER BY ridership_data DESC LIMIT 200', async (err, resl) => {
+        const marta200 = resl[199].ridership_data;
+        let top200 = '';
+        let tier = '';
+        let rq = '';
+        let issue = '';
+        let ada = '';
+        let count = 0;
+        let string = 'AND (';
+        if (req.query.top200 == 'true') {
+          count = 1;
+          top200 = 'ridership_data >= ' + marta200 + ' ';
+        }
+        if (req.query.tier != '6') {
+          if (count > 0) {
+            tier = 'AND tier=' + req.query.tier + ' ';
+          }
+          else {
+            tier = 'tier=' + req.query.tier + ' ';
+          }
+          count = 2;
+        }
+        if (req.query.rq != '6') {
+          if (count > 0) {
+            rq = 'AND ridership_quintile=' + req.query.rq + ' ';
+          }
+          else {
+            rq = 'ridership_quintile=' + req.query.rq + ' ';
+          }
+          count = 3;
+        }
+        if (req.query.issue != '') {
+          if (count > 0) {
+            issue = "AND problems LIKE '%" + req.query.issue + "%'";
+          }
+          else {
+            issue = "problems LIKE '%" + req.query.issue + "%'";
+          }
+          count = 4;
+        }
+        if(req.query.ada != ''){
+          if (count > 0) {
+            ada = "AND ada_access='" + req.query.ada + "' ";
+          }
+          else {
+            ada = "ada_access='" + req.query.ada + "' ";
+          }
+          count = 5;
+        }
+        string = string + top200 + tier + rq + issue +ada + ')'
+        let sql = '';
+        if (count > 0) {
+          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ' + string
+        }
+        else {
+          sql = 'SELECT * FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ';
+        }
+        await db.query(sql, [modify, keyword, keyword], (err, result) => {
+          if (err) {
+            console.log(err)
+            response(req, res, -200, "Failed to take max page", [])
+          }
+          else {
+            response(req, res, 100, "Success to take max page", result)
+          }
+        })
+      })
+    }
+    else if (org == 'ATLDOT') {
+      db.query('SELECT ridership_data FROM atldot_bus_table ORDER BY ridership_data DESC LIMIT 200', async (err, resl) => {
+        const atldot200 = resl[199].ridership_data;
+        let top200 = '';
+        let tier = '';
+        let rq = '';
+        let issue = '';
+        let ada = '';
+        let count = 0;
+        let string = 'AND (';
+        console.log(req.query)
+        if (req.query.top200 == 'true') {
+          count = 1;
+          top200 = 'ridership_data >= ' + atldot200 + ' ';
+        }
+        if (req.query.tier != '6') {
+          if (count > 0) {
+            tier = 'AND tier=' + req.query.tier + ' ';
+          }
+          else {
+            tier = 'tier=' + req.query.tier + ' ';
+          }
+          count = 2;
+        }
+        if (req.query.rq != '6') {
+          if (count > 0) {
+            rq = 'AND ridership_quintile=' + req.query.rq + ' ';
+          }
+          else {
+            rq = 'ridership_quintile=' + req.query.rq + ' ';
+          }
+          count = 3;
+        }
+        if (req.query.issue != '') {
+          if (count > 0) {
+            issue = "AND suggestions LIKE '%" + req.query.issue + "%'";
+          }
+          else {
+            issue = "suggestions LIKE '%" + req.query.issue + "%'";
+          }
+          count = 4;
+        }
+        if(req.query.ada != ''){
+          if (count > 0) {
+            ada = "AND ada_access='" + req.query.ada + "' ";
+          }
+          else {
+            ada = "ada_access='" + req.query.ada + "' ";
+          }
+          count = 5;
+        }
+        string = string + top200 + tier + rq + issue + ada + ')'
+        let sql = '';
+        if (count > 0) {
+          sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ' + string
+        }
+        else {
+          sql = 'SELECT * FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ';
+        }
+
+        await db.query(sql, [modify, keyword, keyword], (err, result) => {
+          if (err) {
+            console.log(err)
+            response(req, res, -200, "Failed to take max page", [])
+          }
+          else {
+            response(req, res, 100, "Success to take max page", result)
+          }
+        })
+      })
+    }
+    else {
+      console.log(err)
+      response(req, res, -200, "Organization Error", [])
+    }
+  }
+  catch (err) {
+    console.log(err)
+    response(req, res, -200, "Server Error", [])
+  }
+})
 //정류장 하나 출력
 router.get('/onestation/:pk/:org', (req, res, next) => {
   try {
@@ -556,7 +715,7 @@ router.post('/addproblem', async (req, res, next) => {
           }
           else {
 
-            await db.query('SELECT DISTINCT type FROM problem_table WHERE bus_pk=? AND status="Complete" ORDER BY pk DESC', [pk], async (err, result) => {
+            await db.query('SELECT DISTINCT type FROM problem_table WHERE bus_pk=? AND status!="Complete" ORDER BY pk DESC', [pk], async (err, result) => {
               if (err) {
                 console.log(err)
                 response(req, res, -200, "Failed to insert problems", [])
@@ -592,39 +751,16 @@ router.post('/addproblem', async (req, res, next) => {
   }
 })
 //problem 삭제
-router.post('/deleteproblem', async (req, res, next) => {
+router.post('/deleteproblem', (req, res, next) => {
   try {
     const pk = req.body.pk
-    await db.query('DELETE FROM problem_table WHERE pk=?',[pk],async(err, result)=>{
+    db.query('DELETE FROM problem_table WHERE pk=?',[pk],(err, result)=>{
       if (err) {
         console.log(err)
         response(req, res, -200, "Failed to delete problem", [])
       }
       else {
-        await db.query('SELECT DISTINCT type FROM problem_table WHERE bus_pk=? AND status="Complete" ORDER BY pk DESC', [pk], async (err, result) => {
-          if (err) {
-            console.log(err)
-            response(req, res, -200, "Failed to delete problem", [])
-          }
-          else {
-            console.log(result)
-            let string = '';
-            for (var i = 0; i < result.length; i++) {
-              string += result[i].type + ', ';
-            }
-            string = string.substring(0, string.length - 2)
-
-            await db.query('UPDATE marta_bus_table SET problems=? WHERE pk=?', [string, pk], (err, result) => {
-              if (err) {
-                console.log(err)
-                response(req, res, -200, "Failed to delete problem", [])
-              }
-              else {
-                response(req, res, 100, "Success to delete problem", [])
-              }
-            })
-          }
-        })
+        response(req, res, 200, "Success to delete problem", [])
       }
     })
   }
@@ -634,47 +770,24 @@ router.post('/deleteproblem', async (req, res, next) => {
   }
 })
 //suggestion 삭제
-router.post('/deletesuggestion', async (req, res, next) => {
-  try {
-    const pk = req.body.pk
-    await db.query('DELETE FROM suggestion_table WHERE pk=?',[pk],async(err, result)=>{
-      if (err) {
-        console.log(err)
-        response(req, res, -200, "Failed to delete suggestion", [])
-      }
-      else {
-        await db.query('SELECT DISTINCT amenity FROM suggestion_table WHERE bus_pk=? AND status="Complete" ORDER BY pk DESC', [pk], async (err, result) => {
-          if (err) {
-            console.log(err)
-            response(req, res, -200, "Failed to delete suggestion", [])
-          }
-          else {
-            console.log(result,652)
-            let string = '';
-            for (var i = 0; i < result.length; i++) {
-              string += result[i].amenity + ', ';
-            }
-            string = string.substring(0, string.length - 2)
-            console.log(string,658)
-            await db.query('UPDATE atldot_bus_table SET suggestions=? WHERE pk=?', [string, pk], (err, result) => {
-              if (err) {
-                console.log(err)
-                response(req, res, -200, "Failed to delete suggestion", [])
-              }
-              else {
-                response(req, res, 100, "Success to delete suggestion", [])
-              }
-            })
-          }
-        })
-      }
-    })
-  }
-  catch (err) {
-    console.log(err)
-    response(req, res, -200, "Server Error", [])
-  }
-})
+  router.post('/deletesuggestion', (req, res, next) => {
+    try {
+      const pk = req.body.pk
+      db.query('DELETE FROM suggestion_table WHERE pk=?',[pk],(err, result)=>{
+        if (err) {
+          console.log(err)
+          response(req, res, -200, "Failed to delete suggestion", [])
+        }
+        else {
+          response(req, res, 200, "Success to delete suggestion", [])
+        }
+      })
+    }
+    catch (err) {
+      console.log(err)
+      response(req, res, -200, "Server Error", [])
+    }
+  })
 //update 교체
 router.post('/updatecreate', (req, res, next) => {
   try {
@@ -728,13 +841,14 @@ router.post('/addsuggestion', async (req, res, next) => {
             list[i].date,
             list[i].name,
             list[i].organization,
-            list[i].type,
+            list[i].amenity,
             list[i].status,
             list[i].notes,
             pk
           ]);
         
     }
+    console.log(arr)
     await db.query('DELETE FROM suggestion_table WHERE status!="Complete"', async (err, result) => {
       if (err) {
         if (err) {
@@ -751,7 +865,7 @@ router.post('/addsuggestion', async (req, res, next) => {
           }
           else {
 
-            await db.query('SELECT DISTINCT amenity FROM suggestion_table WHERE bus_pk=? AND status="Complete" ORDER BY pk DESC', [pk], async (err, result) => {
+            await db.query('SELECT DISTINCT amenity FROM suggestion_table WHERE bus_pk=? AND status!="Complete" ORDER BY pk DESC', [pk], async (err, result) => {
               if (err) {
                 console.log(err)
                 response(req, res, -200, "Failed to insert suggestions", [])
