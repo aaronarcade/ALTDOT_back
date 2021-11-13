@@ -42,7 +42,14 @@ app.get('/', (req, res) => {
 app.post('/api/addstationmarta',(req, res, next)=>{
         try {
                 xlsxFile('./SampleData.xlsx').then((rows)=>{
-                        let arr = rows.slice(1,501);
+                        let a = (req.body.count-1)*500+1;
+                        let arr = [];
+                        if(req.body.count==7){
+                                arr = rows.slice(a,rows.length);
+                        }
+                        else{
+                                arr = rows.slice(a,a+500);
+                        }
                         //let arr = rows.slice(501,1001);
                         //let arr = rows.slice(1001,1501);
                         //let arr = rows.slice(1501,2001);
@@ -71,13 +78,14 @@ app.post('/api/addstationmarta',(req, res, next)=>{
 app.post('/api/addstationatldot',(req, res, next)=>{
         try {
                 xlsxFile('./SampleData.xlsx').then((rows)=>{
-                        let arr = rows.slice(1,501);
-                        //let arr = rows.slice(501,1001);
-                        //let arr = rows.slice(1001,1501);
-                        //let arr = rows.slice(1501,2001);
-                        //let arr = rows.slice(2001,2501);
-                        //let arr = rows.slice(2501,3001);
-                        //let arr = rows.slice(3001,rows.length);
+                        let a = (req.body.count-1)*500+1;
+                        let arr = [];
+                        if(req.body.count==7){
+                                arr = rows.slice(a,rows.length);
+                        }
+                        else{
+                                arr = rows.slice(a,a+500);
+                        }
                         
 
                                  db.query('INSERT INTO atldot_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data,facing_dir, position, ada_access) VALUES ?',[arr],(err, result)=>{
