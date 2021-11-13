@@ -39,74 +39,74 @@ app.get('/', (req, res) => {
         console.log("back-end initialized")
         res.send('back-end initialized')
 });
-app.post('/api/addstationmarta',(req, res, next)=>{
-        try {
-                xlsxFile('./SampleData.xlsx').then((rows)=>{
-                        let a = (req.body.count-1)*500+1;
-                        let arr = [];
-                        if(req.body.count==7){
-                                arr = rows.slice(a,rows.length);
-                        }
-                        else{
-                                arr = rows.slice(a,a+500);
-                        }
-                        //let arr = rows.slice(501,1001);
-                        //let arr = rows.slice(1001,1501);
-                        //let arr = rows.slice(1501,2001);
-                        //let arr = rows.slice(2001,2501);
-                        //let arr = rows.slice(2501,3001);
-                        //let arr = rows.slice(3001,rows.length);
-                                 db.query('INSERT INTO marta_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data,facing_dir, position, ada_access) VALUES ?',[arr],(err, result)=>{
-                                        if (err) {
-                                                 console.log(err)
-                                                 response(req, res, -200, "Failed to add station", [])
-                                               }
-                                               else {
-                                                 response(req, res, 100, "Success to add station", [])
+// app.post('/api/addstationmarta',(req, res, next)=>{
+//         try {
+//                 xlsxFile('./SampleData.xlsx').then((rows)=>{
+//                         let a = (req.body.count-1)*500+1;
+//                         let arr = [];
+//                         if(req.body.count==7){
+//                                 arr = rows.slice(a,rows.length);
+//                         }
+//                         else{
+//                                 arr = rows.slice(a,a+500);
+//                         }
+//                         //let arr = rows.slice(501,1001);
+//                         //let arr = rows.slice(1001,1501);
+//                         //let arr = rows.slice(1501,2001);
+//                         //let arr = rows.slice(2001,2501);
+//                         //let arr = rows.slice(2501,3001);
+//                         //let arr = rows.slice(3001,rows.length);
+//                                  db.query('INSERT INTO marta_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data,facing_dir, position, ada_access) VALUES ?',[arr],(err, result)=>{
+//                                         if (err) {
+//                                                  console.log(err)
+//                                                  response(req, res, -200, "Failed to add station", [])
+//                                                }
+//                                                else {
+//                                                  response(req, res, 100, "Success to add station", [])
                                                  
-                                               }
-                                 })
+//                                                }
+//                                  })
                         
                         
-                })
-        }
-        catch (err) {
-                console.log(err)
-                response(req, res, -200, "서버 에러 발생", [])
-        }
-})
-app.post('/api/addstationatldot',(req, res, next)=>{
-        try {
-                xlsxFile('./SampleData.xlsx').then((rows)=>{
-                        let a = (req.body.count-1)*500+1;
-                        let arr = [];
-                        if(req.body.count==7){
-                                arr = rows.slice(a,rows.length);
-                        }
-                        else{
-                                arr = rows.slice(a,a+500);
-                        }
+//                 })
+//         }
+//         catch (err) {
+//                 console.log(err)
+//                 response(req, res, -200, "서버 에러 발생", [])
+//         }
+// })
+// app.post('/api/addstationatldot',(req, res, next)=>{
+//         try {
+//                 xlsxFile('./SampleData.xlsx').then((rows)=>{
+//                         let a = (req.body.count-1)*500+1;
+//                         let arr = [];
+//                         if(req.body.count==7){
+//                                 arr = rows.slice(a,rows.length);
+//                         }
+//                         else{
+//                                 arr = rows.slice(a,a+500);
+//                         }
                         
 
-                                 db.query('INSERT INTO atldot_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data,facing_dir, position, ada_access) VALUES ?',[arr],(err, result)=>{
-                                        if (err) {
-                                                 console.log(err)
-                                                 response(req, res, -200, "Failed to add station", [])
-                                               }
-                                               else {
-                                                 response(req, res, 100, "Success to add station", [])
+//                                  db.query('INSERT INTO atldot_bus_table (stop_id, tier, ridership_quintile,stop_name,ridership_data,facing_dir, position, ada_access) VALUES ?',[arr],(err, result)=>{
+//                                         if (err) {
+//                                                  console.log(err)
+//                                                  response(req, res, -200, "Failed to add station", [])
+//                                                }
+//                                                else {
+//                                                  response(req, res, 100, "Success to add station", [])
                                                  
-                                               }
-                                 })
+//                                                }
+//                                  })
                         
                         
-                })
-        }
-        catch (err) {
-                console.log(err)
-                response(req, res, -200, "서버 에러 발생", [])
-        }
-})
+//                 })
+//         }
+//         catch (err) {
+//                 console.log(err)
+//                 response(req, res, -200, "서버 에러 발생", [])
+//         }
+// })
 
 app.post('/api/addimage', upload.single('image'), async (req, res) => {
         try {
