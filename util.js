@@ -119,6 +119,9 @@ const namingImagesPath = (api, files) => {
             isNull: !(files) 
         }
     }
+    else if(api == "pdf"){
+        
+    }
 }
 function removeItems(arr, value) {
     var i = 0;
