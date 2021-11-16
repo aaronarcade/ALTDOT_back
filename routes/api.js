@@ -470,22 +470,26 @@ router.get('/maxpage/:org/:modify', (req, res, next) => {
         string = string + top200 + tier + rq + issue +ada + ')'
         let sql = '';
         if (count > 0) {
-          sql = 'SELECT COUNT(*) FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ' + string
+          sql = 'SELECT COUNT(*) FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR problems LIKE ?) ' + string
         }
         else {
-          sql = 'SELECT COUNT(*) FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ';
+          sql = 'SELECT COUNT(*) FROM marta_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR problems LIKE ?) ';
         }
-        await db.query(sql, [modify, keyword, keyword], (err, result) => {
+        await db.query(sql, [modify, keyword, keyword,keyword], (err, result) => {
           if (err) {
             console.log(err)
             response(req, res, -200, "Failed to take max page", [])
           }
           else {
+            let maxPage = 0;
+            console.log(result)
             if(result[0]['COUNT(*)']%500==0){
               maxPage = (result[0]['COUNT(*)']-result[0]['COUNT(*)']%500)/500
+              console.log(500)
             }
             else{
               maxPage = (result[0]['COUNT(*)']-result[0]['COUNT(*)']%500)/500+1
+              console.log(500)
             }
             response(req, res, 100, "Success to take max page",  maxPage)
           }
@@ -546,13 +550,13 @@ router.get('/maxpage/:org/:modify', (req, res, next) => {
         string = string + top200 + tier + rq + issue + ada + ')'
         let sql = '';
         if (count > 0) {
-          sql = 'SELECT COUNT(*) FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ' + string
+          sql = 'SELECT COUNT(*) FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR suggestions LIKE ?) ' + string
         }
         else {
-          sql = 'SELECT COUNT(*) FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ?) ';
+          sql = 'SELECT COUNT(*) FROM atldot_bus_table WHERE modify=? AND (stop_name LIKE ? OR stop_id LIKE ? OR suggestions LIKE ?) ';
         }
 
-        await db.query(sql, [modify, keyword, keyword], (err, result) => {
+        await db.query(sql, [modify, keyword, keyword,keyword], (err, result) => {
           if (err) {
             console.log(err)
             response(req, res, -200, "Failed to take max page", [])
@@ -561,10 +565,13 @@ router.get('/maxpage/:org/:modify', (req, res, next) => {
             let maxPage = 0;
             if(result[0]['COUNT(*)']%500==0){
               maxPage = (result[0]['COUNT(*)']-result[0]['COUNT(*)']%500)/500
+              console.log(500)
             }
             else{
               maxPage = (result[0]['COUNT(*)']-result[0]['COUNT(*)']%500)/500+1
+              console.log(501)
             }
+
             response(req, res, 100, "Success to take max page",  maxPage)
           }
         })
