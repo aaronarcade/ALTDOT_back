@@ -481,7 +481,13 @@ router.get('/maxpage/:org/:modify', (req, res, next) => {
             response(req, res, -200, "Failed to take max page", [])
           }
           else {
-            response(req, res, 100, "Success to take max page", parseInt(result[0]['COUNT(*)']/500+1))
+            if(result[0]['COUNT(*)']%500==0){
+              maxPage = (result[0]['COUNT(*)']-result[0]['COUNT(*)']%500)/500
+            }
+            else{
+              maxPage = (result[0]['COUNT(*)']-result[0]['COUNT(*)']%500)/500+1
+            }
+            response(req, res, 100, "Success to take max page",  maxPage)
           }
         })
       })
@@ -552,7 +558,14 @@ router.get('/maxpage/:org/:modify', (req, res, next) => {
             response(req, res, -200, "Failed to take max page", [])
           }
           else {
-            response(req, res, 100, "Success to take max page", parseInt(result[0]['COUNT(*)']/500+1))
+            let maxPage = 0;
+            if(result[0]['COUNT(*)']%500==0){
+              maxPage = (result[0]['COUNT(*)']-result[0]['COUNT(*)']%500)/500
+            }
+            else{
+              maxPage = (result[0]['COUNT(*)']-result[0]['COUNT(*)']%500)/500+1
+            }
+            response(req, res, 100, "Success to take max page",  maxPage)
           }
         })
       })
