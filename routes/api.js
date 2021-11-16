@@ -154,7 +154,7 @@ router.post('/login', (req, res, next) => {
 
               res.cookie("token", token, { httpOnly: true, maxAge: 60 * 60 * 1000 });
 
-              return response(req, res, 200, 'Welcome to ATLDOT, ' + user.name, []);
+              return response(req, res, 200, 'Welcome to '+user.organization+', ' + user.name, []);
             }
           }
         })
